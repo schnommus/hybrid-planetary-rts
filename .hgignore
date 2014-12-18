@@ -1,0 +1,6 @@
+syntax: glob
+obj/Debug/GamePrototype_debug.Build.CppClean.log
+vs/GamePrototype.sdf
+vs/GamePrototype.suo
+vs/ipch/gameprototype-db9f8e0e/gameprototype_debug-27f69531.ipch
+vs/obj/Debug/GamePrototype.log
