@@ -97,13 +97,13 @@ public:
 
 	virtual void processEntities(artemis::ImmutableBag<artemis::Entity*> & bag) {
 		if(sf::Keyboard::isKeyPressed(sf::Keyboard::Right))
-			gamma += world->getDelta()/100;
+			gamma -= world->getDelta()/10000;
 		if(sf::Keyboard::isKeyPressed(sf::Keyboard::Left))
-			gamma -= world->getDelta()/100;
+			gamma += world->getDelta()/10000;
 		if(sf::Keyboard::isKeyPressed(sf::Keyboard::Up))
-			theta += world->getDelta()/100;
+			theta -= world->getDelta()/10000;
 		if(sf::Keyboard::isKeyPressed(sf::Keyboard::Down))
-			theta -= world->getDelta()/100;
+			theta += world->getDelta()/10000;
 		if(sf::Keyboard::isKeyPressed(sf::Keyboard::O))
 			phi += world->getDelta();
 		if(sf::Keyboard::isKeyPressed(sf::Keyboard::L))
@@ -112,15 +112,20 @@ public:
 		// Must do this because we just overwrote the default behavior
 		artemis::EntityProcessingSystem::processEntities(bag);
 
-		gamma = 0;
-		theta = 0;
+		gamma /= 1.1;
+		theta /= 1.1;
 	}
 
 	virtual void processEntity(artemis::Entity &e) {
+		float sz = 1400.0;
+		if( sf::Keyboard::isKeyPressed(sf::Keyboard::Space)) {
+			sz = 400;
+		}
+
 		float u = positionMapper.get(e)->u, v = positionMapper.get(e)->v;
-		float x = cos(3.14159*u) * sin(3.14159*-2*v) * 200;
-		float y = sin(3.14159*u) * sin(3.14159*-2*v) * 200;
-		float z = cos(3.14159*-2*v) * 200;
+		float x = cos(3.14159*u) * sin(3.14159*-2*v) * sz;
+		float y = sin(3.14159*u) * sin(3.14159*-2*v) * sz;
+		float z = cos(3.14159*-2*v) * sz;
 
 		Matrix4x3 m1;
 		m1.setupRotate( 1, theta );
@@ -132,23 +137,36 @@ public:
 
 		Vector3 rotated = Vector3(x, y, z) * worldtransform;
 
+		Matrix4x3 sun;
+		sun.setupLocalToParent( Vector3(0, 0, 0), EulerAngles(0.3, 1.8, 0) );
+		Vector3 sunrotated = Vector3(x, y, z) * sun;
+
 
 		sf::Sprite &s = spriteMapper.get(e)->sprite;
-		s.setPosition( rotated.x+200, rotated.y+200 );
+		s.setPosition( rotated.x+window.getSize().x/2, rotated.y+window.getSize().y/2 );
 		s.setColor(sf::Color(255, 255, 255, 255));
+		s.setScale(1, 1);
+		if( sf::Keyboard::isKeyPressed(sf::Keyboard::Space)) s.setScale(0.35, 0.35);
+		if( sunrotated.z < 0.0f) {
+			float factor = 255-(30-sunrotated.z/(sz/200));
+			s.setColor(sf::Color(factor, factor, factor, 255));
+		}
 		if( rotated.z > 0.0f ) {
 			window.draw( s );
 		}
 
+		s.setColor(sf::Color(255, 255, 255, 64));
+		if( s.getPosition().x > 0 && s.getPosition().y > 0 && s.getPosition().x < window.getSize().x && s.getPosition().y < window.getSize().y && rotated.z > 0.0f) {
+			s.setColor(sf::Color(255, 255, 255, 255));
+		}
+
 		//minimap
 		if( v > 0.5 )
-			s.setPosition( u*200+350, v*200+350 ); 
+			s.setPosition( u*200, v*200-100 ); 
 		else
-			s.setPosition( u*200+550, -v*200+550 );
+			s.setPosition( u*200+200, -v*200+100 );
 
-		if( u < 0 ) {
-			std::cout << u << std::endl;
-		}
+		s.setScale(0.1, 0.1);
 
 		window.draw( s );
 	};
@@ -160,18 +178,27 @@ int main(int argc, char **argv) {
     artemis::SystemManager * sm = world.getSystemManager();
     artemis::EntityManager * em = world.getEntityManager();
 
-	sf::RenderWindow window(sf::VideoMode(800, 600), "My window");
+	sf::RenderWindow window(sf::VideoMode(1280, 720), "My window");
 	UVSphericalRenderSystem * sphereRenderSys = (UVSphericalRenderSystem*)sm->setSystem(new UVSphericalRenderSystem(window));
 	PlayerSystem * playerSys = (PlayerSystem*)sm->setSystem(new PlayerSystem());
 
     sm->initializeAll();
 
-    for(int i = 0; i != 400; ++i) {
+    for(int i = 0; i != 1800; ++i) {
 		float u = float(rand()%1000)/1000.0f, v = float(rand()%1000)/1000.0f;
 		
 		artemis::Entity & player = em->create();
 		player.addComponent(new UVPositionComponent(u, v));
-		player.addComponent(new SpriteComponent("point.png"));
+		player.addComponent(new SpriteComponent("dirt.png"));
+		player.refresh();
+	}
+
+	for(int i = 0; i != 100; ++i) {
+		float u = float(rand()%1000)/1000.0f, v = float(rand()%1000)/1000.0f;
+
+		artemis::Entity & player = em->create();
+		player.addComponent(new UVPositionComponent(u, v));
+		player.addComponent(new SpriteComponent("hole.png"));
 		player.refresh();
 	}
 
@@ -180,7 +207,7 @@ int main(int argc, char **argv) {
 
 		artemis::Entity & player = em->create();
 		player.addComponent(new UVPositionComponent(u, v));
-		player.addComponent(new SpriteComponent("point2.png"));
+		player.addComponent(new SpriteComponent("ice.png"));
 		player.refresh();
 	}
 
@@ -189,7 +216,7 @@ int main(int argc, char **argv) {
 
 		artemis::Entity & player = em->create();
 		player.addComponent(new UVPositionComponent(u, v));
-		player.addComponent(new SpriteComponent("point2.png"));
+		player.addComponent(new SpriteComponent("ice.png"));
 		player.refresh();
 	}
 
@@ -198,7 +225,7 @@ int main(int argc, char **argv) {
 
 		artemis::Entity & player = em->create();
 		player.addComponent(new UVPositionComponent(u, v));
-		player.addComponent(new SpriteComponent("point2.png"));
+		player.addComponent(new SpriteComponent("ice.png"));
 		player.refresh();
 	}
 
@@ -207,7 +234,7 @@ int main(int argc, char **argv) {
 
 		artemis::Entity & player = em->create();
 		player.addComponent(new UVPositionComponent(u, v));
-		player.addComponent(new SpriteComponent("point2.png"));
+		player.addComponent(new SpriteComponent("ice.png"));
 		player.refresh();
 	}
 
@@ -232,7 +259,17 @@ int main(int argc, char **argv) {
 		world.setDelta( clock.restart().asSeconds() );
 		playerSys->process();
 
-		window.clear(sf::Color::Black);
+		if( sf::Keyboard::isKeyPressed(sf::Keyboard::Space)) {
+			window.clear(sf::Color::Black);
+			sf::CircleShape c(410);
+			c.setOrigin(c.getLocalBounds().width/2, c.getLocalBounds().height/2);
+			c.setFillColor(sf::Color(66, 55, 42));
+			c.setPosition( window.getSize().x/2+8, window.getSize().y/2 );
+			window.draw(c);
+		} else {
+			window.clear(sf::Color(66, 55, 42));
+		}
+
 		// draw everything here...
 		sphereRenderSys->process();
 
