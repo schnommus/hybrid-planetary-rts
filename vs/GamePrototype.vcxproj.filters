@@ -13,15 +13,60 @@
       <UniqueIdentifier>{67DA6AB6-F800-4c08-8B7A-83BB121AAD01}</UniqueIdentifier>
       <Extensions>rc;ico;cur;bmp;dlg;rc2;rct;bin;rgs;gif;jpg;jpeg;jpe;resx;tiff;tif;png;wav;mfcribbon-ms</Extensions>
     </Filter>
+    <Filter Include="Header Files\GameMath">
+      <UniqueIdentifier>{a9d30450-d374-4522-8f1b-38d437e6d032}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\GameMath">
+      <UniqueIdentifier>{b05d36f7-3551-4210-a463-a680865bd0ab}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\src\GamePrototype.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="..\thirdparty\gamemath\EulerAngles.cpp">
+      <Filter>Source Files\GameMath</Filter>
+    </ClCompile>
+    <ClCompile Include="..\thirdparty\gamemath\MathUtil.cpp">
+      <Filter>Source Files\GameMath</Filter>
+    </ClCompile>
+    <ClCompile Include="..\thirdparty\gamemath\Matrix4x3.cpp">
+      <Filter>Source Files\GameMath</Filter>
+    </ClCompile>
+    <ClCompile Include="..\thirdparty\gamemath\Quaternion.cpp">
+      <Filter>Source Files\GameMath</Filter>
+    </ClCompile>
+    <ClCompile Include="..\thirdparty\gamemath\RotationMatrix.cpp">
+      <Filter>Source Files\GameMath</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\src\VecX.h">
       <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\thirdparty\gamemath\vector3.h">
+      <Filter>Header Files\GameMath</Filter>
+    </ClInclude>
+    <ClInclude Include="..\thirdparty\gamemath\EulerAngles.h">
+      <Filter>Header Files\GameMath</Filter>
+    </ClInclude>
+    <ClInclude Include="..\thirdparty\gamemath\Font.h">
+      <Filter>Header Files\GameMath</Filter>
+    </ClInclude>
+    <ClInclude Include="..\thirdparty\gamemath\MathUtil.h">
+      <Filter>Header Files\GameMath</Filter>
+    </ClInclude>
+    <ClInclude Include="..\thirdparty\gamemath\Matrix4x3.h">
+      <Filter>Header Files\GameMath</Filter>
+    </ClInclude>
+    <ClInclude Include="..\thirdparty\gamemath\Model.h">
+      <Filter>Header Files\GameMath</Filter>
+    </ClInclude>
+    <ClInclude Include="..\thirdparty\gamemath\Quaternion.h">
+      <Filter>Header Files\GameMath</Filter>
+    </ClInclude>
+    <ClInclude Include="..\thirdparty\gamemath\RotationMatrix.h">
+      <Filter>Header Files\GameMath</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>

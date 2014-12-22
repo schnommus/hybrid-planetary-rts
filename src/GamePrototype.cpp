@@ -2,29 +2,18 @@
 #include <SFML\Graphics.hpp>
 #include <iostream>
 
-#include "VecX.h"
+#include <..\gamemath\Matrix4x3.h>
+#include <..\gamemath\EulerAngles.h>
+#include <..\gamemath\vector3.h>
 
-class VelocityComponent : public artemis::Component {
+
+class UVPositionComponent : public artemis::Component {
 public:
-    float velocityX;
-    float velocityY;
-
-    VelocityComponent(float velocityX, float velocityY) {
-        this->velocityX = velocityX;
-        this->velocityY = velocityY;
-    };
-};
-
-class PositionComponent : public artemis::Component {
-public:
-    float posX;
-    float posY;
-	float posZ;
 	float u, v;
 
-    PositionComponent(float posX, float posY) {
-        this->u = posX;
-        this->v = posY;
+    UVPositionComponent(float uv, float vv) {
+        this->u = uv;
+        this->v = vv;
     };
 };
 
@@ -41,84 +30,127 @@ private:
 	sf::Texture texture;
 };
 
-class MovementSystem : public artemis::EntityProcessingSystem {
-private:
-    artemis::ComponentMapper<VelocityComponent> velocityMapper;
-    artemis::ComponentMapper<PositionComponent> positionMapper;
-
+class PlayerComponent : public artemis::Component {
 public:
-	float theta, phi, gamma;
+	PlayerComponent () {}
+};
 
-    MovementSystem() {
-        addComponentType<VelocityComponent>();
-        addComponentType<PositionComponent>();
-    };
+class PlayerSystem : public artemis::EntityProcessingSystem {
+	artemis::ComponentMapper<UVPositionComponent> positionMapper;
+	artemis::ComponentMapper<PlayerComponent> playerMapper;
+public:
+	PlayerSystem() {
+		addComponentType<UVPositionComponent>();
+		addComponentType<PlayerComponent>();
+	}
 
-    virtual void initialize() {
-        velocityMapper.init(*world);
-        positionMapper.init(*world);
-		theta = phi = gamma = 0.0f;
-    };
+	virtual void initialize() {
+		positionMapper.init(*world);
+		playerMapper.init(*world);
+	}
 
-    virtual void processEntity(artemis::Entity &e) {
+	virtual void processEntity(artemis::Entity &e) {
 		float &u = positionMapper.get(e)->u;
 		float &v = positionMapper.get(e)->v;
 
-		float x = cos(3.14159*u) * sin(3.14159*-2*v) * 200;
-		float y = sin(3.14159*u) * sin(3.14159*-2*v) * 200;
-		float z = cos(3.14159*-2*v) * 200;
+		if(sf::Keyboard::isKeyPressed(sf::Keyboard::W))
+			v += world->getDelta();
+		if(sf::Keyboard::isKeyPressed(sf::Keyboard::S))
+			v -= world->getDelta();
+		if(sf::Keyboard::isKeyPressed(sf::Keyboard::A))
+			u -= world->getDelta();
+		if(sf::Keyboard::isKeyPressed(sf::Keyboard::D))
+			u += world->getDelta();
 
-		t3::Vec3<float> rotated = t3::Vec3<float>(x, y, z).AngularTransform( t3::Vec3<float>(theta, phi, gamma) );
-
-		positionMapper.get(e)->posX = rotated.x+200;
-		positionMapper.get(e)->posY = rotated.y+200;
-		positionMapper.get(e)->posZ = rotated.z;
-
-		//v += world->getDelta()/2;
-		if(sf::Keyboard::isKeyPressed(sf::Keyboard::Right))
-			gamma += world->getDelta()/100;
-		if(sf::Keyboard::isKeyPressed(sf::Keyboard::Left))
-			gamma -= world->getDelta()/100;
-		if(sf::Keyboard::isKeyPressed(sf::Keyboard::Up)) {
-			theta += world->getDelta()/100;
+		if( u > 1.0 ) { 
+			u -= 1.0;
+			v = 1.0-v;
 		}
-		if(sf::Keyboard::isKeyPressed(sf::Keyboard::Down))
-			theta -= world->getDelta()/100;
-		if(sf::Keyboard::isKeyPressed(sf::Keyboard::O))
-			phi += world->getDelta()/100;
-		if(sf::Keyboard::isKeyPressed(sf::Keyboard::L))
-			phi -= world->getDelta()/100;
-
-		//std::cout << theta << std::endl;
-
-    };
-
+		if( u < 0.0 ) { 
+			u += 1.0;
+			v = 1.0-v;
+		}
+		if( v > 1.0 ) v -= 1.0;
+		if( v < 0.0 ) v += 1.0;
+	}
 };
 
-class RenderSystem : public artemis::EntityProcessingSystem {
+class UVSphericalRenderSystem : public artemis::EntityProcessingSystem {
 private:
-	artemis::ComponentMapper<PositionComponent> positionMapper;
+	artemis::ComponentMapper<UVPositionComponent> positionMapper;
 	artemis::ComponentMapper<SpriteComponent> spriteMapper;
 	sf::RenderWindow &window;
-
+	float theta, phi, gamma;
+	Matrix4x3 worldtransform;
 public:
-	RenderSystem( sf::RenderWindow &rwindow ) : window(rwindow) {
-		addComponentType<PositionComponent>();
+	UVSphericalRenderSystem( sf::RenderWindow &rwindow ) : window(rwindow) {
+		addComponentType<UVPositionComponent>();
 		addComponentType<SpriteComponent>();
 	}
 
 	virtual void initialize() {
 		positionMapper.init(*world);
 		spriteMapper.init(*world);
+		theta = phi = gamma = 0.0f;
+		worldtransform.identity();
 	};
 
+	virtual void processEntities(artemis::ImmutableBag<artemis::Entity*> & bag) {
+		if(sf::Keyboard::isKeyPressed(sf::Keyboard::Right))
+			gamma += world->getDelta()/100;
+		if(sf::Keyboard::isKeyPressed(sf::Keyboard::Left))
+			gamma -= world->getDelta()/100;
+		if(sf::Keyboard::isKeyPressed(sf::Keyboard::Up))
+			theta += world->getDelta()/100;
+		if(sf::Keyboard::isKeyPressed(sf::Keyboard::Down))
+			theta -= world->getDelta()/100;
+		if(sf::Keyboard::isKeyPressed(sf::Keyboard::O))
+			phi += world->getDelta();
+		if(sf::Keyboard::isKeyPressed(sf::Keyboard::L))
+			phi -= world->getDelta();
+
+		// Must do this because we just overwrote the default behavior
+		artemis::EntityProcessingSystem::processEntities(bag);
+
+		gamma = 0;
+		theta = 0;
+	}
+
 	virtual void processEntity(artemis::Entity &e) {
-		sf::Vector2f pos(positionMapper.get(e)->posX, positionMapper.get(e)->posY);
+		float u = positionMapper.get(e)->u, v = positionMapper.get(e)->v;
+		float x = cos(3.14159*u) * sin(3.14159*-2*v) * 200;
+		float y = sin(3.14159*u) * sin(3.14159*-2*v) * 200;
+		float z = cos(3.14159*-2*v) * 200;
+
+		Matrix4x3 m1;
+		m1.setupRotate( 1, theta );
+
+		Matrix4x3 m2;
+		m2.setupRotate( 2, gamma );
+
+		worldtransform = worldtransform * (m1*m2);
+
+		Vector3 rotated = Vector3(x, y, z) * worldtransform;
+
+
 		sf::Sprite &s = spriteMapper.get(e)->sprite;
-		s.setPosition( pos);
-		if( positionMapper.get(e)->posZ < 0.0f ) {
-			window.draw( s);
+		s.setPosition( rotated.x+200, rotated.y+200 );
+		s.setColor(sf::Color(255, 255, 255, 255));
+		if( rotated.z > 0.0f ) {
+			window.draw( s );
 		}
+
+		//minimap
+		if( v > 0.5 )
+			s.setPosition( u*200+350, v*200+350 ); 
+		else
+			s.setPosition( u*200+550, -v*200+550 );
+
+		if( u < 0 ) {
+			std::cout << u << std::endl;
+		}
+
+		window.draw( s );
 	};
 };
 
@@ -126,11 +158,11 @@ int main(int argc, char **argv) {
 	
     artemis::World world;
     artemis::SystemManager * sm = world.getSystemManager();
-    MovementSystem * movementsys = (MovementSystem*)sm->setSystem(new MovementSystem());
     artemis::EntityManager * em = world.getEntityManager();
 
 	sf::RenderWindow window(sf::VideoMode(800, 600), "My window");
-	RenderSystem * rendersys = (RenderSystem*)sm->setSystem(new RenderSystem(window));
+	UVSphericalRenderSystem * sphereRenderSys = (UVSphericalRenderSystem*)sm->setSystem(new UVSphericalRenderSystem(window));
+	PlayerSystem * playerSys = (PlayerSystem*)sm->setSystem(new PlayerSystem());
 
     sm->initializeAll();
 
@@ -138,8 +170,7 @@ int main(int argc, char **argv) {
 		float u = float(rand()%1000)/1000.0f, v = float(rand()%1000)/1000.0f;
 		
 		artemis::Entity & player = em->create();
-		player.addComponent(new VelocityComponent(80,40));
-		player.addComponent(new PositionComponent(u, v));
+		player.addComponent(new UVPositionComponent(u, v));
 		player.addComponent(new SpriteComponent("point.png"));
 		player.refresh();
 	}
@@ -148,8 +179,7 @@ int main(int argc, char **argv) {
 		float u = float(rand()%1000)/1000.0f, v = float(rand()%100)/1000.0f;
 
 		artemis::Entity & player = em->create();
-		player.addComponent(new VelocityComponent(80,40));
-		player.addComponent(new PositionComponent(u, v));
+		player.addComponent(new UVPositionComponent(u, v));
 		player.addComponent(new SpriteComponent("point2.png"));
 		player.refresh();
 	}
@@ -158,8 +188,7 @@ int main(int argc, char **argv) {
 		float u = float(rand()%1000)/1000.0f, v = 0.5+float(rand()%100)/1000.0f;
 
 		artemis::Entity & player = em->create();
-		player.addComponent(new VelocityComponent(80,40));
-		player.addComponent(new PositionComponent(u, v));
+		player.addComponent(new UVPositionComponent(u, v));
 		player.addComponent(new SpriteComponent("point2.png"));
 		player.refresh();
 	}
@@ -168,8 +197,7 @@ int main(int argc, char **argv) {
 		float u = float(rand()%1000)/1000.0f, v = 0.5-float(rand()%100)/1000.0f;
 
 		artemis::Entity & player = em->create();
-		player.addComponent(new VelocityComponent(80,40));
-		player.addComponent(new PositionComponent(u, v));
+		player.addComponent(new UVPositionComponent(u, v));
 		player.addComponent(new SpriteComponent("point2.png"));
 		player.refresh();
 	}
@@ -178,12 +206,17 @@ int main(int argc, char **argv) {
 		float u = float(rand()%1000)/1000.0f, v = 1-float(rand()%100)/1000.0f;
 
 		artemis::Entity & player = em->create();
-		player.addComponent(new VelocityComponent(80,40));
-		player.addComponent(new PositionComponent(u, v));
+		player.addComponent(new UVPositionComponent(u, v));
 		player.addComponent(new SpriteComponent("point2.png"));
 		player.refresh();
 	}
 
+
+	artemis::Entity & player = em->create();
+	player.addComponent(new PlayerComponent() );
+	player.addComponent(new UVPositionComponent(0.2, 0.2));
+	player.addComponent(new SpriteComponent("point3.png"));
+	player.refresh();
 
 	sf::Clock clock;
 
@@ -197,11 +230,11 @@ int main(int argc, char **argv) {
 		//logic
 		world.loopStart();
 		world.setDelta( clock.restart().asSeconds() );
-		movementsys->process();
+		playerSys->process();
 
 		window.clear(sf::Color::Black);
 		// draw everything here...
-		rendersys->process();
+		sphereRenderSys->process();
 
 		window.display();
 	}
