@@ -21,9 +21,12 @@ class SpriteComponent : public artemis::Component {
 public:
 	sf::Sprite sprite;
 
-	SpriteComponent( std::string directory ) {
+	SpriteComponent( std::string directory, float scale = 1.0f ) {
 		texture.loadFromFile("..\\media\\" + directory);
 		sprite.setTexture(texture);
+		sprite.setScale(scale, scale);
+		sprite.setOrigin( sprite.getLocalBounds().width/2, sprite.getLocalBounds().height/2 );
+		sprite.setRotation(rand()%360);
 	}
 
 private:
@@ -80,7 +83,7 @@ private:
 	artemis::ComponentMapper<UVPositionComponent> positionMapper;
 	artemis::ComponentMapper<SpriteComponent> spriteMapper;
 	sf::RenderWindow &window;
-	float theta, phi, gamma;
+	float theta, gamma;
 	Matrix4x3 worldtransform;
 public:
 	UVSphericalRenderSystem( sf::RenderWindow &rwindow ) : window(rwindow) {
@@ -91,7 +94,7 @@ public:
 	virtual void initialize() {
 		positionMapper.init(*world);
 		spriteMapper.init(*world);
-		theta = phi = gamma = 0.0f;
+		theta = gamma = 0.0f;
 		worldtransform.identity();
 	};
 
@@ -104,10 +107,6 @@ public:
 			theta -= world->getDelta()/10000;
 		if(sf::Keyboard::isKeyPressed(sf::Keyboard::Down))
 			theta += world->getDelta()/10000;
-		if(sf::Keyboard::isKeyPressed(sf::Keyboard::O))
-			phi += world->getDelta();
-		if(sf::Keyboard::isKeyPressed(sf::Keyboard::L))
-			phi -= world->getDelta();
 
 		// Must do this because we just overwrote the default behavior
 		artemis::EntityProcessingSystem::processEntities(bag);
@@ -143,19 +142,30 @@ public:
 
 
 		sf::Sprite &s = spriteMapper.get(e)->sprite;
+		sf::Vector2f defaultScale = s.getScale();
+
 		s.setPosition( rotated.x+window.getSize().x/2, rotated.y+window.getSize().y/2 );
 		s.setColor(sf::Color(255, 255, 255, 255));
-		s.setScale(1, 1);
-		if( sf::Keyboard::isKeyPressed(sf::Keyboard::Space)) s.setScale(0.35, 0.35);
+		
+		if( sf::Keyboard::isKeyPressed(sf::Keyboard::Space)) {
+			float dist = sqrt( rotated.x * rotated.x + rotated.y * rotated.y );
+			float fact = 0.35;
+			if( dist > sz*0.9) fact = 0.2;
+			if( dist > sz*0.95) fact = 0.1;
+			s.setScale(fact*defaultScale.x, fact*defaultScale.y);
+		}
 		if( sunrotated.z < 0.0f) {
-			float factor = 255-(30-sunrotated.z/(sz/200));
+			float factor = 255-(30-1.5*sunrotated.z/(sz/200));
+			if(factor < 0) factor = 0;
 			s.setColor(sf::Color(factor, factor, factor, 255));
 		}
 		if( rotated.z > 0.0f ) {
-			window.draw( s );
+			if( s.getPosition().x > -100 && s.getPosition().y > -100 && s.getPosition().x < window.getSize().x+100 && s.getPosition().y < window.getSize().y +100) {
+				window.draw( s );
+			}
 		}
 
-		s.setColor(sf::Color(255, 255, 255, 64));
+		s.setColor(sf::Color(255, 255, 255, 34));
 		if( s.getPosition().x > 0 && s.getPosition().y > 0 && s.getPosition().x < window.getSize().x && s.getPosition().y < window.getSize().y && rotated.z > 0.0f) {
 			s.setColor(sf::Color(255, 255, 255, 255));
 		}
@@ -166,9 +176,11 @@ public:
 		else
 			s.setPosition( u*200+200, -v*200+100 );
 
-		s.setScale(0.1, 0.1);
+		s.setScale(0.1*defaultScale.x, 0.1*defaultScale.y);
 
 		window.draw( s );
+
+		s.setScale( defaultScale );
 	};
 };
 
@@ -184,21 +196,46 @@ int main(int argc, char **argv) {
 
     sm->initializeAll();
 
-    for(int i = 0; i != 1800; ++i) {
-		float u = float(rand()%1000)/1000.0f, v = float(rand()%1000)/1000.0f;
-		
+	std::vector< sf::Vector2f > previous;
+	previous.push_back(sf::Vector2f(0,0));
+	int c = 0;
+    for(int i = 0; i != 2000; ++i) {
+		float u = 0, v = 0;
+		for( int j = 0; j != 100; ++j ) {
+			u = float(rand()%1000)/1000.0f;
+			v = acos( 2*(float(rand()%1000)/1000.0f) - 1)/3.14159;
+
+			bool close = false;
+			for(int k = 0; k != previous.size(); ++k) {
+				if( (previous[k].x - u)*(previous[k].x - u) + (previous[k].y - v)*(previous[k].y - v) < 0.0002 )
+					close = true;
+			}
+
+			if (!close) {
+				previous.push_back( sf::Vector2f(u, v));
+				break;
+			} else {
+				u = 0;
+				v = 0;
+			}
+		}
+
+		if( u == 0 && v == 0) c += 1;
+
 		artemis::Entity & player = em->create();
 		player.addComponent(new UVPositionComponent(u, v));
-		player.addComponent(new SpriteComponent("dirt.png"));
+		player.addComponent(new SpriteComponent("moon1.png", 4.0f));
 		player.refresh();
 	}
+
+	std::cout << "Unnaccounted: " << c << std::endl;
 
 	for(int i = 0; i != 100; ++i) {
 		float u = float(rand()%1000)/1000.0f, v = float(rand()%1000)/1000.0f;
 
 		artemis::Entity & player = em->create();
 		player.addComponent(new UVPositionComponent(u, v));
-		player.addComponent(new SpriteComponent("hole.png"));
+		player.addComponent(new SpriteComponent("crater.png", 4.0f));
 		player.refresh();
 	}
 
@@ -261,10 +298,10 @@ int main(int argc, char **argv) {
 
 		if( sf::Keyboard::isKeyPressed(sf::Keyboard::Space)) {
 			window.clear(sf::Color::Black);
-			sf::CircleShape c(410);
+			sf::CircleShape c(402);
 			c.setOrigin(c.getLocalBounds().width/2, c.getLocalBounds().height/2);
 			c.setFillColor(sf::Color(66, 55, 42));
-			c.setPosition( window.getSize().x/2+8, window.getSize().y/2 );
+			c.setPosition( window.getSize().x/2+1, window.getSize().y/2 );
 			window.draw(c);
 		} else {
 			window.clear(sf::Color(66, 55, 42));
