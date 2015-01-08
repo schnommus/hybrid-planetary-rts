@@ -94,6 +94,7 @@
     <ClCompile Include="..\thirdparty\gamemath\Matrix4x3.cpp" />
     <ClCompile Include="..\thirdparty\gamemath\Quaternion.cpp" />
     <ClCompile Include="..\thirdparty\gamemath\RotationMatrix.cpp" />
+    <ClCompile Include="..\thirdparty\voronoi\VoronoiDiagramGenerator.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\src\VecX.h" />
@@ -105,6 +106,7 @@
     <ClInclude Include="..\thirdparty\gamemath\Quaternion.h" />
     <ClInclude Include="..\thirdparty\gamemath\RotationMatrix.h" />
     <ClInclude Include="..\thirdparty\gamemath\vector3.h" />
+    <ClInclude Include="..\thirdparty\voronoi\VoronoiDiagramGenerator.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

@@ -19,6 +19,9 @@
     <Filter Include="Source Files\GameMath">
       <UniqueIdentifier>{b05d36f7-3551-4210-a463-a680865bd0ab}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Source Files\Voronoi">
+      <UniqueIdentifier>{7fa5fac1-5f41-49b2-b3d4-6d1ef90df468}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\src\GamePrototype.cpp">
@@ -38,6 +41,9 @@
     </ClCompile>
     <ClCompile Include="..\thirdparty\gamemath\RotationMatrix.cpp">
       <Filter>Source Files\GameMath</Filter>
+    </ClCompile>
+    <ClCompile Include="..\thirdparty\voronoi\VoronoiDiagramGenerator.cpp">
+      <Filter>Source Files\Voronoi</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -67,6 +73,9 @@
     </ClInclude>
     <ClInclude Include="..\thirdparty\gamemath\RotationMatrix.h">
       <Filter>Header Files\GameMath</Filter>
+    </ClInclude>
+    <ClInclude Include="..\thirdparty\voronoi\VoronoiDiagramGenerator.h">
+      <Filter>Source Files\Voronoi</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>
