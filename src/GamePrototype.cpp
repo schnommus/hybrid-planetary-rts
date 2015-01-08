@@ -1,10 +1,14 @@
 #include <Artemis\Artemis.h>
 #include <SFML\Graphics.hpp>
 #include <iostream>
+#include <sstream>
+#include <string>
+#include <map>
 
 #include <..\gamemath\Matrix4x3.h>
 #include <..\gamemath\EulerAngles.h>
 #include <..\gamemath\vector3.h>
+#include <..\voronoi\VoronoiDiagramGenerator.h>
 
 //#define MINIMAP
 
@@ -218,6 +222,17 @@ public:
 
 };
 
+struct vec2node {
+	vec2node(int xv, int yv) : x(xv), y(yv) { }
+	int x, y;
+	std::vector<int> connected;
+	bool operator<(const vec2node &rhs) const {
+		return x < rhs.x && y < rhs.y;
+	}
+	bool operator==(const vec2node &rhs) const {
+		return x == rhs.x && y == rhs.y;
+	}
+};
 class UVSphericalRenderSystem : public artemis::EntityProcessingSystem {
 private:
 	artemis::ComponentMapper<UVPositionComponent> positionMapper;
@@ -225,6 +240,11 @@ private:
 	sf::RenderWindow &window;
 	float theta, gamma;
 	Matrix4x3 worldtransform;
+	VoronoiDiagramGenerator vdg;
+	sf::Texture planetmask_tex;
+	sf::Sprite planetmask;
+	sf::Font debugfont;
+
 public:
 	UVSphericalRenderSystem( sf::RenderWindow &rwindow ) : window(rwindow) {
 		addComponentType<UVPositionComponent>();
@@ -236,7 +256,42 @@ public:
 		spriteMapper.init(*world);
 		theta = gamma = 0.0f;
 		worldtransform.identity();
+
+		planetmask_tex.loadFromFile("..\\media\\planetmask.png");
+		planetmask.setTexture(planetmask_tex);
+		debugfont.loadFromFile("..\\media\\RiskofRainFont.ttf");
 	};
+
+	sf::Vector2f transform2D(float u, float v) {
+		
+
+		float sz = 2000.0;
+		if( sf::Keyboard::isKeyPressed(sf::Keyboard::Space)) {
+			sz = 400;
+		}
+
+		float x = cos(3.14159*u) * sin(3.14159*-2*v) * sz;
+		float y = sin(3.14159*u) * sin(3.14159*-2*v) * sz;
+		float z = cos(3.14159*-2*v) * sz;
+
+		Vector3 rotated = Vector3(x, y, z) * worldtransform;
+
+		return sf::Vector2f( rotated.x+window.getSize().x/2, rotated.y+window.getSize().y/2);
+	}
+
+	bool isVisible(float u, float v) {
+		float sz = 2000.0;
+		if( sf::Keyboard::isKeyPressed(sf::Keyboard::Space)) {
+			sz = 400;
+		}
+		float x = cos(3.14159*u) * sin(3.14159*-2*v) * sz;
+		float y = sin(3.14159*u) * sin(3.14159*-2*v) * sz;
+		float z = cos(3.14159*-2*v) * sz;
+
+		Vector3 rotated = Vector3(x, y, z) * worldtransform;
+
+		return rotated.z > 0.0f;
+	}
 
 	virtual void processEntities(artemis::ImmutableBag<artemis::Entity*> & bag) {
 		//theta=gamma=0.0f;
@@ -262,6 +317,98 @@ public:
 		m2.setupRotate( 2, gamma );
 
 		worldtransform = worldtransform * (m1*m2);
+		
+		if( sf::Keyboard::isKeyPressed(sf::Keyboard::Space)) {
+			int sz = nodeIds.size();
+			float *x_s = new float [sz];
+			float *y_s = new float [sz];
+			for(int i = 0; i != sz; ++i) {
+				x_s[i] = ((UVPositionComponent*)world->getEntityManager()->getEntity(nodeIds[i]).getComponent<UVPositionComponent>())->screen_x;
+				y_s[i] = ((UVPositionComponent*)world->getEntityManager()->getEntity(nodeIds[i]).getComponent<UVPositionComponent>())->screen_y;
+			}
+
+			vdg.generateVoronoi(x_s, y_s, sz, 0, 1280, 0, 720 );
+
+			vdg.resetIterator();
+
+			float x1, y1, x2, y2;
+			std::vector< vec2node > vec;
+			while( vdg.getNext(x1, y1, x2, y2) ) {
+				sf::Vertex line[] = { sf::Vertex( sf::Vector2f(x1, y1) ), sf::Vertex( sf::Vector2f(x2, y2)) };
+				window.draw(line, 2, sf::Lines);
+
+				if( std::find( vec.begin(), vec.end(), vec2node(x1, y1) ) == vec.end()) {
+					vec.push_back( vec2node(x1, y1) );
+				}
+
+				if( std::find( vec.begin(), vec.end(), vec2node(x2, y2) ) == vec.end()) {
+					vec.push_back( vec2node(x2, y2) );
+				}
+
+				int i;
+				for(i = 0; i != vec.size(); ++i) {if( vec2node(x2, y2) == vec[i]) break;}
+				std::find( vec.begin(), vec.end(), vec2node(x1, y1) )->connected.push_back( i );
+
+				for(i = 0; i != vec.size(); ++i) {if( vec2node(x1, y1) == vec[i]) break;}
+				std::find( vec.begin(), vec.end(), vec2node(x2, y2) )->connected.push_back( i );
+
+			}
+
+			for( std::vector<vec2node>::iterator it = vec.begin(); it != vec.end(); ++it ) {
+				if( it->connected.size() < 3 ) it->connected.clear();
+			}
+
+			std::vector< std::vector< sf::Vector2f > > polys;
+
+			for( int i = 0; i != vec.size()-1; ++i) {
+				int n = i+1;
+				polys.push_back( std::vector<sf::Vector2f> () );
+				while( true ) {
+					polys[i].push_back(sf::Vector2f(vec[n].x, vec[n].y));
+					if( vec[n].connected.size() == 0 ) break;
+					int best = -1;
+					float besttheta = 0;
+					for( int i = 0; i != vec[n].connected.size(); ++i) {
+						float newtheta = atan2( (float)vec[vec[n].connected[i]].y-(float)vec[n].y, (float)vec[vec[n].connected[i]].x-(float)vec[n].x );
+						float prevtheta = 0.0f;
+						if( polys[i].size() > 1 ) {
+							prevtheta = atan2( polys[i][polys[i].size()-1].y - polys[i][polys[i].size()-2].y, polys[i][polys[i].size()-1].x - polys[i][polys[i].size()-2].x );
+						}
+						if( 3.14159+ newtheta-prevtheta > besttheta ) {
+							besttheta = 3.14159+newtheta-prevtheta;
+							best = i;
+						}
+					}
+					if( best = -1 ) break;
+					int old = n;
+					n = vec[n].connected[best];
+					vec[old].connected.erase( vec[old].connected.begin() + best);
+				}
+			}
+
+
+			for( int n = 1; n != vec.size()-1; ++n) {
+				if( polys[n].size() > 2 ) {
+				std::ostringstream oss;
+				oss << n;
+				sf::String s(oss.str());
+				sf::Text t(s, debugfont, 10);
+				t.setPosition(polys[n][0].x, polys[n][0].y);
+				window.draw(t);
+				}
+
+				sf::ConvexShape c(polys[n].size());
+				for( int i = 0; i != polys[n].size(); ++i ) {
+					c.setPoint(i, sf::Vector2f(polys[n][i].x, polys[n][i].y) );
+				}
+
+				
+				c.setFillColor( sf::Color(rand()%250, rand()%250, rand()%250) );
+
+				window.draw(c);
+			}
+			//window.draw(planetmask);
+		}
 
 		// Must do this because we just overwrote the default behavior
 		artemis::EntityProcessingSystem::processEntities(bag);
@@ -451,6 +598,7 @@ int main(int argc, char **argv) {
 		sphereRenderSys->process();
 
 		window.display();
+
 	}
 
     return 0;
