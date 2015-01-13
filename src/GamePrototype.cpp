@@ -100,24 +100,24 @@ class StarSystem : public artemis::EntityProcessingSystem {
 	artemis::ComponentMapper<StarComponent> starMapper;
 	sf::Texture starTex;
 	sf::Sprite starSprite;
-	sf::RenderWindow &window;
+	sf::RenderTarget &window;
 	float theta, gamma;
 	float fact;
 public:
-	StarSystem(sf::RenderWindow &rwindow ) : window(rwindow) {
+	StarSystem(sf::RenderTarget &rwindow ) : window(rwindow) {
 		addComponentType<StarComponent>();
 		addComponentType<FlatPositionComponent>();
 		theta=gamma=0.0f;
 		starTex.loadFromFile("..\\media\\star.png");
 		starSprite.setTexture(starTex);
-		starSprite.setScale(4, 4);
+		starSprite.setScale(1, 1);
 	}
 
 	virtual void processEntities(artemis::ImmutableBag<artemis::Entity*> & bag) {
 		theta *= 0.98;
 		gamma *= 0.98;
 
-		float fact = 70*sin(world->getDelta());
+		float fact = 70*sin(world->getDelta())/4;
 		if(sf::Keyboard::isKeyPressed(sf::Keyboard::Right))
 			gamma -= fact;
 		if(sf::Keyboard::isKeyPressed(sf::Keyboard::Left))
@@ -143,13 +143,15 @@ public:
 		x -= gamma/10.0;
 		y -= theta/10.0;
 
-		if( x > window.getSize().x-15) x = window.getSize().x-244;
-		if( y > window.getSize().y-16) y = window.getSize().y-241;
-		if( y < window.getSize().y-241 ) y = window.getSize().y-16;
-		if( x < window.getSize().x-244 ) x = window.getSize().x-15;
+		if( x > window.getSize().x-15/4) x = window.getSize().x-244/4;
+		if( y > window.getSize().y-16/4) y = window.getSize().y-241/4;
+		if( y < window.getSize().y-241/4 ) y = window.getSize().y-16/4;
+		if( x < window.getSize().x-244/4 ) x = window.getSize().x-15/4;
 
-		starSprite.setPosition(x,y);
-		window.draw(starSprite);
+		if( pow(y-(window.getSize().y-32), 2) + pow(x-(window.getSize().x-32), 2) > 26*26 ) {
+			starSprite.setPosition(x,y);
+			window.draw(starSprite);
+		}
 	}
 };
 
@@ -157,10 +159,10 @@ class FlatRenderSystem : public artemis::EntityProcessingSystem {
 private:
 	artemis::ComponentMapper<FlatPositionComponent> positionMapper;
 	artemis::ComponentMapper<SpriteComponent> spriteMapper;
-	sf::RenderWindow &window;
+	sf::RenderTarget &window;
 	float theta, gamma;
 public:
-	FlatRenderSystem( sf::RenderWindow &rwindow ) : window(rwindow) {
+	FlatRenderSystem( sf::RenderTarget &rwindow ) : window(rwindow) {
 		addComponentType<FlatPositionComponent>();
 		addComponentType<SpriteComponent>();
 	}
@@ -176,7 +178,7 @@ public:
 		theta *= 0.98;
 		gamma *= 0.98;
 
-		float fact = 70*sin(world->getDelta());
+		float fact = 70*sin(world->getDelta())/4.0;
 		if(sf::Keyboard::isKeyPressed(sf::Keyboard::Right))
 			gamma -= fact;
 		if(sf::Keyboard::isKeyPressed(sf::Keyboard::Left))
@@ -232,11 +234,11 @@ public:
 		y += theta;
 		sf::Vector2f defaultScale = s.getScale();
 
-		if( x > window.getSize().x+64 || y > window.getSize().y+64 || x < -64 || y < -64 ) {
-			if( x > window.getSize().x+64 ) x -= window.getSize().x+128;
-			if( y > window.getSize().y+64 ) y -= window.getSize().y+128;
-			if( x < -64 ) x += window.getSize().x+128;
-			if( y < -64 ) y += window.getSize().y+128;
+		if( x > window.getSize().x+16 || y > window.getSize().y+16 || x < -16 || y < -16 ) {
+			if( x > window.getSize().x+16 ) x -= window.getSize().x+32;
+			if( y > window.getSize().y+16 ) y -= window.getSize().y+32;
+			if( x < -16 ) x += window.getSize().x+32;
+			if( y < -16 ) y += window.getSize().y+32;
 
 			reSprite(e);
 		}
@@ -267,18 +269,18 @@ private:
 	artemis::ComponentMapper<UVPositionComponent> positionMapper;
 	artemis::ComponentMapper<SpriteComponent> spriteMapper;
 	artemis::ComponentMapper<MinimapComponent> minimapMapper;
-	sf::RenderWindow &window;
+	sf::RenderTarget &window;
 	float theta, gamma;
 	Matrix4x3 worldtransform;
 	sf::Font debugfont;
 	float sz;
 public:
-	MinimapSphericalRenderSystem( sf::RenderWindow &rwindow ) : window(rwindow) {
+	MinimapSphericalRenderSystem( sf::RenderTarget &rwindow ) : window(rwindow) {
 		addComponentType<UVPositionComponent>();
 		addComponentType<SpriteComponent>();
 		addComponentType<MinimapComponent>();
 
-		sz = 100;
+		sz = 100/4;
 	}
 
 	virtual void initialize() {
@@ -356,7 +358,7 @@ public:
 		sf::Sprite &s = spriteMapper.get(e)->sprite;
 		sf::Vector2f defaultScale = s.getScale();
 
-		s.setPosition( rotated.x+window.getSize().x-125, rotated.y+window.getSize().y-125 );
+		s.setPosition( rotated.x+window.getSize().x-125/4, rotated.y+window.getSize().y-125/4 );
 		s.setColor(sf::Color(255, 255, 255, 255));
 
 		//Reduction in size at edges
@@ -398,13 +400,13 @@ class UVSphericalRenderSystem : public artemis::EntityProcessingSystem {
 private:
 	artemis::ComponentMapper<UVPositionComponent> positionMapper;
 	artemis::ComponentMapper<SpriteComponent> spriteMapper;
-	sf::RenderWindow &window;
+	sf::RenderTarget &window;
 	float theta, gamma;
 	Matrix4x3 worldtransform;
 	sf::Font debugfont;
 
 public:
-	UVSphericalRenderSystem( sf::RenderWindow &rwindow ) : window(rwindow) {
+	UVSphericalRenderSystem( sf::RenderTarget &rwindow ) : window(rwindow) {
 		addComponentType<UVPositionComponent>();
 		addComponentType<SpriteComponent>();
 	}
@@ -479,7 +481,7 @@ public:
 	}
 
 	virtual void processEntity(artemis::Entity &e) {
-		float sz = 2000.0;
+		float sz = 2000.0/4;
 
 		float u = positionMapper.get(e)->u, v = positionMapper.get(e)->v;
 		float x = cos(3.14159*u) * sin(3.14159*-2*v) * sz;
@@ -561,7 +563,7 @@ void PlaceRandom(artemis::EntityManager* em, int n, std::string type, bool (*res
 		if( (*restrict)(u, v) == true ) {
 			artemis::Entity & ent = em->create();
 			ent.addComponent(new UVPositionComponent(u, v));
-			ent.addComponent(new SpriteComponent(type, 4.0f, frames));
+			ent.addComponent(new SpriteComponent(type, 1.0f, frames));
 			if( isNode ) {
 				ent.addComponent( new TerrainNodeComponent( type ) );
 				nodeIds.push_back(ent.getId());
@@ -580,7 +582,8 @@ int main(int argc, char **argv) {
     artemis::SystemManager * sm = world.getSystemManager();
     artemis::EntityManager * em = world.getEntityManager();
 
-	sf::RenderWindow window(sf::VideoMode(1280, 720), "My window", sf::Style::Default );
+	sf::RenderWindow realwindow(sf::VideoMode(1280, 720), "GamePrototype", sf::Style::Default );
+	sf::RenderTexture window; window.create(427, 240);
 	UVSphericalRenderSystem * sphereRenderSys = (UVSphericalRenderSystem*)sm->setSystem(new UVSphericalRenderSystem(window));
 	FlatRenderSystem * flatRenderSys = (FlatRenderSystem*)sm->setSystem(new FlatRenderSystem(window));
 	StarSystem * starSys = (StarSystem*)sm->setSystem(new StarSystem(window));
@@ -605,18 +608,18 @@ int main(int argc, char **argv) {
 	PlaceRandom(em, 40, "Plant1.png", AvoidPolarRestrict);
 	PlaceRandom(em, 40, "Plant2.png", AvoidPolarRestrict);
 
-	for(int i = 0; i != (int)(ceil(window.getSize().x/64.0f)+2); ++i) {
-		for(int j = 0; j != (int)(ceil(window.getSize().y/64.0f)+2); ++j) {
+	for(int i = 0; i != (int)(ceil(window.getSize().x/16.0f)+2); ++i) {
+		for(int j = 0; j != (int)(ceil(window.getSize().y/16.0f)+2); ++j) {
 			artemis::Entity & player = em->create();
-			player.addComponent(new FlatPositionComponent(64*i-64, 64*j-64));
-			player.addComponent(new SpriteComponent("Desert1.png", 4.03f));
+			player.addComponent(new FlatPositionComponent(16*i-16, 16*j-16));
+			player.addComponent(new SpriteComponent("Desert1.png", 1.005f));
 			player.refresh();
 		}
 	}
 
 	for(int i = 0; i != 50; ++i ) {
 		artemis::Entity &e = em->create();
-		e.addComponent(new FlatPositionComponent(window.getSize().x-rand()%220-36, window.getSize().y-rand()%220-36));
+		e.addComponent(new FlatPositionComponent(window.getSize().x-(rand()%220)/4-36/4, window.getSize().y-(rand()%220)/4-36/4));
 		e.addComponent(new StarComponent() );
 		e.refresh();
 	}
@@ -631,14 +634,17 @@ int main(int argc, char **argv) {
 
 	sf::Texture uitex; uitex.loadFromFile("..\\media\\uiOverlay.png");
 	sf::Sprite uispr(uitex);
-	uispr.setScale(4, 4);
-	uispr.setPosition(0, window.getSize().y-4*63);
+	uispr.setScale(1, 1);
+	uispr.setPosition(window.getSize().x-109, window.getSize().y-63);
 
-	while (window.isOpen()) {
+	sf::Sprite pixelrenderer;
+	pixelrenderer.setScale(3, 3);
+
+	while (realwindow.isOpen()) {
 		sf::Event event;
-		while (window.pollEvent(event)) {
+		while (realwindow.pollEvent(event)) {
 			if (event.type == sf::Event::Closed)
-				window.close();
+				realwindow.close();
 		}
 
 		//logic
@@ -651,12 +657,15 @@ int main(int argc, char **argv) {
 		flatRenderSys->process();
 		sphereRenderSys->process();
 
+		minimapRenderSys->process();
 		window.draw(uispr);
 		starSys->process();
-		minimapRenderSys->process();
 
 		window.display();
 
+		pixelrenderer.setTexture( window.getTexture() );
+		realwindow.draw(pixelrenderer);
+		realwindow.display();
 	}
 
     return 0;
