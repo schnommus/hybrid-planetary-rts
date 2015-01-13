@@ -8,7 +8,6 @@
 #include <..\gamemath\Matrix4x3.h>
 #include <..\gamemath\EulerAngles.h>
 #include <..\gamemath\vector3.h>
-#include <..\voronoi\VoronoiDiagramGenerator.h>
 
 //#define MINIMAP
 
@@ -80,48 +79,77 @@ public:
 		: type(typev) {}
 };
 
+class MinimapComponent : public artemis::Component {
+public:
+	MinimapComponent() {}
+};
+
+class StarComponent : public artemis::Component {
+public:
+	StarComponent() {}
+};
+
+
 class PlayerComponent : public artemis::Component {
 public:
 	PlayerComponent () {}
 };
 
-class PlayerSystem : public artemis::EntityProcessingSystem {
-	artemis::ComponentMapper<UVPositionComponent> positionMapper;
-	artemis::ComponentMapper<PlayerComponent> playerMapper;
+class StarSystem : public artemis::EntityProcessingSystem {
+	artemis::ComponentMapper<FlatPositionComponent> positionMapper;
+	artemis::ComponentMapper<StarComponent> starMapper;
+	sf::Texture starTex;
+	sf::Sprite starSprite;
+	sf::RenderWindow &window;
+	float theta, gamma;
+	float fact;
 public:
-	PlayerSystem() {
-		addComponentType<UVPositionComponent>();
-		addComponentType<PlayerComponent>();
+	StarSystem(sf::RenderWindow &rwindow ) : window(rwindow) {
+		addComponentType<StarComponent>();
+		addComponentType<FlatPositionComponent>();
+		theta=gamma=0.0f;
+		starTex.loadFromFile("..\\media\\star.png");
+		starSprite.setTexture(starTex);
+		starSprite.setScale(4, 4);
+	}
+
+	virtual void processEntities(artemis::ImmutableBag<artemis::Entity*> & bag) {
+		theta *= 0.98;
+		gamma *= 0.98;
+
+		float fact = 70*sin(world->getDelta());
+		if(sf::Keyboard::isKeyPressed(sf::Keyboard::Right))
+			gamma -= fact;
+		if(sf::Keyboard::isKeyPressed(sf::Keyboard::Left))
+			gamma += fact;
+		if(sf::Keyboard::isKeyPressed(sf::Keyboard::Up))
+			theta += fact;
+		if(sf::Keyboard::isKeyPressed(sf::Keyboard::Down))
+			theta -= fact;
+
+		// Must do this because we just overwrote the default behavior
+		artemis::EntityProcessingSystem::processEntities(bag);
 	}
 
 	virtual void initialize() {
 		positionMapper.init(*world);
-		playerMapper.init(*world);
+		starMapper.init(*world);
 	}
 
 	virtual void processEntity(artemis::Entity &e) {
-		float &u = positionMapper.get(e)->u;
-		float &v = positionMapper.get(e)->v;
+		float &x = positionMapper.get(e)->x;
+		float &y = positionMapper.get(e)->y;
 
-		if(sf::Keyboard::isKeyPressed(sf::Keyboard::W))
-			v += world->getDelta();
-		if(sf::Keyboard::isKeyPressed(sf::Keyboard::S))
-			v -= world->getDelta();
-		if(sf::Keyboard::isKeyPressed(sf::Keyboard::A))
-			u -= world->getDelta();
-		if(sf::Keyboard::isKeyPressed(sf::Keyboard::D))
-			u += world->getDelta();
+		x -= gamma/10.0;
+		y -= theta/10.0;
 
-		if( u > 1.0 ) { 
-			u -= 1.0;
-			v = 1.0-v;
-		}
-		if( u < 0.0 ) { 
-			u += 1.0;
-			v = 1.0-v;
-		}
-		if( v > 1.0 ) v -= 1.0;
-		if( v < 0.0 ) v += 1.0;
+		if( x > window.getSize().x-15) x = window.getSize().x-244;
+		if( y > window.getSize().y-16) y = window.getSize().y-241;
+		if( y < window.getSize().y-241 ) y = window.getSize().y-16;
+		if( x < window.getSize().x-244 ) x = window.getSize().x-15;
+
+		starSprite.setPosition(x,y);
+		window.draw(starSprite);
 	}
 };
 
@@ -215,8 +243,7 @@ public:
 
 		s.setPosition( x, y );
 
-		if( !sf::Keyboard::isKeyPressed(sf::Keyboard::Space))
-			window.draw( s );
+		window.draw( s );
 	}
 
 
@@ -233,6 +260,140 @@ struct vec2node {
 		return x == rhs.x && y == rhs.y;
 	}
 };
+
+
+class MinimapSphericalRenderSystem : public artemis::EntityProcessingSystem {
+private:
+	artemis::ComponentMapper<UVPositionComponent> positionMapper;
+	artemis::ComponentMapper<SpriteComponent> spriteMapper;
+	artemis::ComponentMapper<MinimapComponent> minimapMapper;
+	sf::RenderWindow &window;
+	float theta, gamma;
+	Matrix4x3 worldtransform;
+	sf::Font debugfont;
+	float sz;
+public:
+	MinimapSphericalRenderSystem( sf::RenderWindow &rwindow ) : window(rwindow) {
+		addComponentType<UVPositionComponent>();
+		addComponentType<SpriteComponent>();
+		addComponentType<MinimapComponent>();
+
+		sz = 100;
+	}
+
+	virtual void initialize() {
+		positionMapper.init(*world);
+		spriteMapper.init(*world);
+		minimapMapper.init(*world);
+		theta = gamma = 0.0f;
+		worldtransform.identity();
+
+		debugfont.loadFromFile("..\\media\\RiskofRainFont.ttf");
+	};
+
+	sf::Vector2f transform2D(float u, float v) {
+		float x = cos(3.14159*u) * sin(3.14159*-2*v) * sz;
+		float y = sin(3.14159*u) * sin(3.14159*-2*v) * sz;
+		float z = cos(3.14159*-2*v) * sz;
+
+		Vector3 rotated = Vector3(x, y, z) * worldtransform;
+
+		return sf::Vector2f( rotated.x+window.getSize().x/2, rotated.y+window.getSize().y/2);
+	}
+
+	bool isVisible(float u, float v) {
+		float x = cos(3.14159*u) * sin(3.14159*-2*v) * sz;
+		float y = sin(3.14159*u) * sin(3.14159*-2*v) * sz;
+		float z = cos(3.14159*-2*v) * sz;
+
+		Vector3 rotated = Vector3(x, y, z) * worldtransform;
+
+		return rotated.z > 0.0f;
+	}
+
+	virtual void processEntities(artemis::ImmutableBag<artemis::Entity*> & bag) {
+		//theta=gamma=0.0f;
+
+		theta *= 0.98;
+		gamma *= 0.98;
+
+		float fact = 0.07*world->getDelta()/2.0f;
+
+		if(sf::Keyboard::isKeyPressed(sf::Keyboard::Right))
+			gamma -= fact;
+		if(sf::Keyboard::isKeyPressed(sf::Keyboard::Left))
+			gamma += fact;
+		if(sf::Keyboard::isKeyPressed(sf::Keyboard::Up))
+			theta -= fact;
+		if(sf::Keyboard::isKeyPressed(sf::Keyboard::Down))
+			theta += fact;
+
+		Matrix4x3 m1;
+		m1.setupRotate( 1, theta );
+
+		Matrix4x3 m2;
+		m2.setupRotate( 2, gamma );
+
+		worldtransform = worldtransform * (m1*m2);
+
+		// Must do this because we just overwrote the default behavior
+		artemis::EntityProcessingSystem::processEntities(bag);
+	}
+
+	virtual void processEntity(artemis::Entity &e) {
+		float u = positionMapper.get(e)->u, v = positionMapper.get(e)->v;
+		float x = cos(3.14159*u) * sin(3.14159*-2*v) * sz;
+		float y = sin(3.14159*u) * sin(3.14159*-2*v) * sz;
+		float z = cos(3.14159*-2*v) * sz;
+
+		Vector3 rotated = Vector3(x, y, z) * worldtransform;
+
+		Matrix4x3 sun;
+		sun.setupLocalToParent( Vector3(0, 0, 0), EulerAngles(0.3, 1.8, 0) );
+		Vector3 sunrotated = Vector3(x, y, z) * sun;
+
+		spriteMapper.get(e)->UpdateAnimation();
+		sf::Sprite &s = spriteMapper.get(e)->sprite;
+		sf::Vector2f defaultScale = s.getScale();
+
+		s.setPosition( rotated.x+window.getSize().x-125, rotated.y+window.getSize().y-125 );
+		s.setColor(sf::Color(255, 255, 255, 255));
+
+		//Reduction in size at edges
+		float dist = sqrt( rotated.x * rotated.x + rotated.y * rotated.y );
+		float fact = 0.35;
+		if( dist > sz*0.9) fact = 0.25;
+		if( dist > sz*0.95) fact = 0.15;
+		s.setScale(fact*defaultScale.x, fact*defaultScale.y);
+
+
+		if( e.getComponent<TerrainNodeComponent>() != nullptr ) {
+			s.scale(1.5f, 1.5f);
+		} else {
+			s.scale(0.3f, 0.3f);
+		}
+
+		if( sunrotated.z < 0.0f) {
+			float factor = 255-(-1.5*sunrotated.z/(sz/200))/2;
+			if(factor < 0) factor = 0;
+			s.setColor(sf::Color(factor, factor, factor, 255));
+		}
+
+		if( rotated.z > 0.0f ) {
+			if( s.getPosition().x > -100 && s.getPosition().y > -100 && s.getPosition().x < window.getSize().x+100 && s.getPosition().y < window.getSize().y +100) {
+				window.draw( s );
+			}
+		} 
+
+		s.setColor(sf::Color(255, 255, 255, 34));
+		if( s.getPosition().x > 0 && s.getPosition().y > 0 && s.getPosition().x < window.getSize().x && s.getPosition().y < window.getSize().y && rotated.z > 0.0f) {
+			s.setColor(sf::Color(255, 255, 255, 255));
+		}
+
+		s.setScale( defaultScale );
+	};
+};
+
 class UVSphericalRenderSystem : public artemis::EntityProcessingSystem {
 private:
 	artemis::ComponentMapper<UVPositionComponent> positionMapper;
@@ -240,9 +401,6 @@ private:
 	sf::RenderWindow &window;
 	float theta, gamma;
 	Matrix4x3 worldtransform;
-	VoronoiDiagramGenerator vdg;
-	sf::Texture planetmask_tex;
-	sf::Sprite planetmask;
 	sf::Font debugfont;
 
 public:
@@ -257,8 +415,6 @@ public:
 		theta = gamma = 0.0f;
 		worldtransform.identity();
 
-		planetmask_tex.loadFromFile("..\\media\\planetmask.png");
-		planetmask.setTexture(planetmask_tex);
 		debugfont.loadFromFile("..\\media\\RiskofRainFont.ttf");
 	};
 
@@ -317,98 +473,6 @@ public:
 		m2.setupRotate( 2, gamma );
 
 		worldtransform = worldtransform * (m1*m2);
-		
-		if( sf::Keyboard::isKeyPressed(sf::Keyboard::Space)) {
-			int sz = nodeIds.size();
-			float *x_s = new float [sz];
-			float *y_s = new float [sz];
-			for(int i = 0; i != sz; ++i) {
-				x_s[i] = ((UVPositionComponent*)world->getEntityManager()->getEntity(nodeIds[i]).getComponent<UVPositionComponent>())->screen_x;
-				y_s[i] = ((UVPositionComponent*)world->getEntityManager()->getEntity(nodeIds[i]).getComponent<UVPositionComponent>())->screen_y;
-			}
-
-			vdg.generateVoronoi(x_s, y_s, sz, 0, 1280, 0, 720 );
-
-			vdg.resetIterator();
-
-			float x1, y1, x2, y2;
-			std::vector< vec2node > vec;
-			while( vdg.getNext(x1, y1, x2, y2) ) {
-				sf::Vertex line[] = { sf::Vertex( sf::Vector2f(x1, y1) ), sf::Vertex( sf::Vector2f(x2, y2)) };
-				window.draw(line, 2, sf::Lines);
-
-				if( std::find( vec.begin(), vec.end(), vec2node(x1, y1) ) == vec.end()) {
-					vec.push_back( vec2node(x1, y1) );
-				}
-
-				if( std::find( vec.begin(), vec.end(), vec2node(x2, y2) ) == vec.end()) {
-					vec.push_back( vec2node(x2, y2) );
-				}
-
-				int i;
-				for(i = 0; i != vec.size(); ++i) {if( vec2node(x2, y2) == vec[i]) break;}
-				std::find( vec.begin(), vec.end(), vec2node(x1, y1) )->connected.push_back( i );
-
-				for(i = 0; i != vec.size(); ++i) {if( vec2node(x1, y1) == vec[i]) break;}
-				std::find( vec.begin(), vec.end(), vec2node(x2, y2) )->connected.push_back( i );
-
-			}
-
-			for( std::vector<vec2node>::iterator it = vec.begin(); it != vec.end(); ++it ) {
-				if( it->connected.size() < 3 ) it->connected.clear();
-			}
-
-			std::vector< std::vector< sf::Vector2f > > polys;
-
-			for( int i = 0; i != vec.size()-1; ++i) {
-				int n = i+1;
-				polys.push_back( std::vector<sf::Vector2f> () );
-				while( true ) {
-					polys[i].push_back(sf::Vector2f(vec[n].x, vec[n].y));
-					if( vec[n].connected.size() == 0 ) break;
-					int best = -1;
-					float besttheta = 0;
-					for( int i = 0; i != vec[n].connected.size(); ++i) {
-						float newtheta = atan2( (float)vec[vec[n].connected[i]].y-(float)vec[n].y, (float)vec[vec[n].connected[i]].x-(float)vec[n].x );
-						float prevtheta = 0.0f;
-						if( polys[i].size() > 1 ) {
-							prevtheta = atan2( polys[i][polys[i].size()-1].y - polys[i][polys[i].size()-2].y, polys[i][polys[i].size()-1].x - polys[i][polys[i].size()-2].x );
-						}
-						if( 3.14159+ newtheta-prevtheta > besttheta ) {
-							besttheta = 3.14159+newtheta-prevtheta;
-							best = i;
-						}
-					}
-					if( best = -1 ) break;
-					int old = n;
-					n = vec[n].connected[best];
-					vec[old].connected.erase( vec[old].connected.begin() + best);
-				}
-			}
-
-
-			for( int n = 1; n != vec.size()-1; ++n) {
-				if( polys[n].size() > 2 ) {
-				std::ostringstream oss;
-				oss << n;
-				sf::String s(oss.str());
-				sf::Text t(s, debugfont, 10);
-				t.setPosition(polys[n][0].x, polys[n][0].y);
-				window.draw(t);
-				}
-
-				sf::ConvexShape c(polys[n].size());
-				for( int i = 0; i != polys[n].size(); ++i ) {
-					c.setPoint(i, sf::Vector2f(polys[n][i].x, polys[n][i].y) );
-				}
-
-				
-				c.setFillColor( sf::Color(rand()%250, rand()%250, rand()%250) );
-
-				window.draw(c);
-			}
-			//window.draw(planetmask);
-		}
 
 		// Must do this because we just overwrote the default behavior
 		artemis::EntityProcessingSystem::processEntities(bag);
@@ -416,9 +480,6 @@ public:
 
 	virtual void processEntity(artemis::Entity &e) {
 		float sz = 2000.0;
-		if( sf::Keyboard::isKeyPressed(sf::Keyboard::Space)) {
-			sz = 400;
-		}
 
 		float u = positionMapper.get(e)->u, v = positionMapper.get(e)->v;
 		float x = cos(3.14159*u) * sin(3.14159*-2*v) * sz;
@@ -438,13 +499,6 @@ public:
 		s.setPosition( rotated.x+window.getSize().x/2, rotated.y+window.getSize().y/2 );
 		s.setColor(sf::Color(255, 255, 255, 255));
 		
-		if( sf::Keyboard::isKeyPressed(sf::Keyboard::Space)) {
-			float dist = sqrt( rotated.x * rotated.x + rotated.y * rotated.y );
-			float fact = 0.35;
-			if( dist > sz*0.9) fact = 0.2;
-			if( dist > sz*0.95) fact = 0.1;
-			s.setScale(fact*defaultScale.x, fact*defaultScale.y);
-		}
 		if( sunrotated.z < 0.0f) {
 			float factor = 255-(-1.5*sunrotated.z/(sz/200))/2;
 			if(factor < 0) factor = 0;
@@ -456,7 +510,6 @@ public:
 		positionMapper.get(e)->colour = s.getColor();
 		
 		if( e.getComponent<TerrainNodeComponent>() != nullptr ) {
-			if( !sf::Keyboard::isKeyPressed( sf::Keyboard::Space ))
 				s.setColor(sf::Color(255, 255, 255, 0));
 		}
 
@@ -482,9 +535,6 @@ public:
 
 		s.setScale(0.1*defaultScale.x, 0.1*defaultScale.y);
 
-#ifdef MINIMAP
-		window.draw( s );
-#endif MINIMAP
 
 		s.setScale( defaultScale );
 	};
@@ -516,6 +566,7 @@ void PlaceRandom(artemis::EntityManager* em, int n, std::string type, bool (*res
 				ent.addComponent( new TerrainNodeComponent( type ) );
 				nodeIds.push_back(ent.getId());
 			}
+			ent.addComponent(new MinimapComponent());
 			ent.refresh();
 		} else {
 			--i;
@@ -532,12 +583,13 @@ int main(int argc, char **argv) {
 	sf::RenderWindow window(sf::VideoMode(1280, 720), "My window", sf::Style::Default );
 	UVSphericalRenderSystem * sphereRenderSys = (UVSphericalRenderSystem*)sm->setSystem(new UVSphericalRenderSystem(window));
 	FlatRenderSystem * flatRenderSys = (FlatRenderSystem*)sm->setSystem(new FlatRenderSystem(window));
-	PlayerSystem * playerSys = (PlayerSystem*)sm->setSystem(new PlayerSystem());
+	StarSystem * starSys = (StarSystem*)sm->setSystem(new StarSystem(window));
+	MinimapSphericalRenderSystem *minimapRenderSys = (MinimapSphericalRenderSystem*)sm->setSystem(new MinimapSphericalRenderSystem(window));
 
     sm->initializeAll();
 
-    PlaceRandom(em, 70, "Desert1.png", AvoidPolarRestrict, true);
-	PlaceRandom(em, 50, "Desert2.png", AvoidPolarRestrict, true);
+    PlaceRandom(em, 170, "Desert1.png", AvoidPolarRestrict, true);
+	PlaceRandom(em, 150, "Desert2.png", AvoidPolarRestrict, true);
 	PlaceRandom(em, 35, "Desert3.png", AvoidPolarRestrict, true);
 
 	PlaceRandom(em, 20, "Snow1.png", PolarRestrict, true);
@@ -562,6 +614,13 @@ int main(int argc, char **argv) {
 		}
 	}
 
+	for(int i = 0; i != 50; ++i ) {
+		artemis::Entity &e = em->create();
+		e.addComponent(new FlatPositionComponent(window.getSize().x-rand()%220-36, window.getSize().y-rand()%220-36));
+		e.addComponent(new StarComponent() );
+		e.refresh();
+	}
+
 	artemis::Entity & player = em->create();
 	player.addComponent(new PlayerComponent() );
 	player.addComponent(new UVPositionComponent(0.2, 0.2));
@@ -569,6 +628,11 @@ int main(int argc, char **argv) {
 	player.refresh();
 
 	sf::Clock clock;
+
+	sf::Texture uitex; uitex.loadFromFile("..\\media\\uiOverlay.png");
+	sf::Sprite uispr(uitex);
+	uispr.setScale(4, 4);
+	uispr.setPosition(0, window.getSize().y-4*63);
 
 	while (window.isOpen()) {
 		sf::Event event;
@@ -580,22 +644,16 @@ int main(int argc, char **argv) {
 		//logic
 		world.loopStart();
 		world.setDelta( clock.restart().asSeconds() );
-		playerSys->process();
 
-		if( sf::Keyboard::isKeyPressed(sf::Keyboard::Space)) {
-			window.clear(sf::Color::Black);
-			sf::CircleShape c(402);
-			c.setOrigin(c.getLocalBounds().width/2, c.getLocalBounds().height/2);
-			c.setFillColor(sf::Color(66, 55, 42));
-			c.setPosition( window.getSize().x/2+1, window.getSize().y/2 );
-			window.draw(c);
-		} else {
-			window.clear(sf::Color(66, 55, 42));
-		}
+		window.clear(sf::Color(66, 55, 42));
 
 		// draw everything here...
 		flatRenderSys->process();
 		sphereRenderSys->process();
+
+		window.draw(uispr);
+		starSys->process();
+		minimapRenderSys->process();
 
 		window.display();
 
