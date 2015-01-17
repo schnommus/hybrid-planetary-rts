@@ -9,14 +9,11 @@
 #include <..\gamemath\EulerAngles.h>
 #include <..\gamemath\vector3.h>
 
-//#define MINIMAP
-
-std::vector<int> nodeIds;
-
 class UVPositionComponent : public artemis::Component {
 public:
 	float u, v;
 	float screen_x, screen_y;
+	bool on_screen;
 	sf::Color colour;
 
     UVPositionComponent(float uv, float vv) {
@@ -24,18 +21,17 @@ public:
         this->v = vv;
 		screen_x = screen_y = 0.0f;
 		colour = sf::Color(255, 255, 255, 255);
+		on_screen = false;
     };
 };
 
 class FlatPositionComponent : public artemis::Component {
 public:
 	float x, y;
-	int mother;
 
 	FlatPositionComponent(float xv, float yv) {
 		this->x = xv;
 		this->y = yv;
-		mother = 0;
 	};
 };
 
@@ -95,40 +91,76 @@ public:
 	PlayerComponent () {}
 };
 
+namespace artemis {
+	class ProcessingSystem : public artemis::EntityProcessingSystem {
+	private:
+		virtual void processEntities(artemis::ImmutableBag<artemis::Entity*> & bag) {
+			doProcessing();
+		}
+
+		virtual void processEntity(artemis::Entity &e) {}
+	protected:
+		virtual void doProcessing() = 0;
+	};
+}
+
+class CameraSystem : public artemis::ProcessingSystem {
+public:
+	float dtheta, dgamma;
+
+	Matrix4x3 worldtransform, sun;
+protected:
+	virtual void doProcessing() {
+		// Movement acc/decceleration
+		dtheta *= 0.98;
+		dgamma *= 0.98;
+
+		// Update camera
+		float fact = 0.07*world->getDelta()/2.0f;
+		if(sf::Keyboard::isKeyPressed(sf::Keyboard::Right))
+			dgamma -= fact;
+		if(sf::Keyboard::isKeyPressed(sf::Keyboard::Left))
+			dgamma += fact;
+		if(sf::Keyboard::isKeyPressed(sf::Keyboard::Up))
+			dtheta += fact;
+		if(sf::Keyboard::isKeyPressed(sf::Keyboard::Down))
+			dtheta -= fact;
+
+		// Update matrices
+		Matrix4x3 m1;
+		m1.setupRotate( 1, -dtheta );
+
+		Matrix4x3 m2;
+		m2.setupRotate( 2, dgamma );
+
+		worldtransform = worldtransform * (m1*m2);
+	}
+
+	virtual void initialize() {
+		dtheta=dgamma=0.0f;
+		worldtransform.identity();
+		sun.setupLocalToParent( Vector3(0, 0, 0), EulerAngles(0.3, 1.8, 0) );
+	}
+
+private:
+	float otheta, ogamma;
+};
+
 class StarSystem : public artemis::EntityProcessingSystem {
 	artemis::ComponentMapper<FlatPositionComponent> positionMapper;
 	artemis::ComponentMapper<StarComponent> starMapper;
+
 	sf::Texture starTex;
 	sf::Sprite starSprite;
+
 	sf::RenderTarget &window;
-	float theta, gamma;
-	float fact;
+	CameraSystem &cameraSystem;
 public:
-	StarSystem(sf::RenderTarget &rwindow ) : window(rwindow) {
+	StarSystem( sf::RenderTarget &rwindow, CameraSystem &cameraSystemv ) : window(rwindow), cameraSystem(cameraSystemv) {
 		addComponentType<StarComponent>();
 		addComponentType<FlatPositionComponent>();
-		theta=gamma=0.0f;
 		starTex.loadFromFile("..\\media\\star.png");
 		starSprite.setTexture(starTex);
-		starSprite.setScale(1, 1);
-	}
-
-	virtual void processEntities(artemis::ImmutableBag<artemis::Entity*> & bag) {
-		theta *= 0.98;
-		gamma *= 0.98;
-
-		float fact = 70*sin(world->getDelta())/4;
-		if(sf::Keyboard::isKeyPressed(sf::Keyboard::Right))
-			gamma -= fact;
-		if(sf::Keyboard::isKeyPressed(sf::Keyboard::Left))
-			gamma += fact;
-		if(sf::Keyboard::isKeyPressed(sf::Keyboard::Up))
-			theta += fact;
-		if(sf::Keyboard::isKeyPressed(sf::Keyboard::Down))
-			theta -= fact;
-
-		// Must do this because we just overwrote the default behavior
-		artemis::EntityProcessingSystem::processEntities(bag);
 	}
 
 	virtual void initialize() {
@@ -140,8 +172,8 @@ public:
 		float &x = positionMapper.get(e)->x;
 		float &y = positionMapper.get(e)->y;
 
-		x -= gamma/10.0;
-		y -= theta/10.0;
+		x -= cameraSystem.dgamma*25;
+		y -= cameraSystem.dtheta*25;
 
 		if( x > window.getSize().x-15/4) x = window.getSize().x-244/4;
 		if( y > window.getSize().y-16/4) y = window.getSize().y-241/4;
@@ -158,11 +190,18 @@ public:
 class FlatRenderSystem : public artemis::EntityProcessingSystem {
 private:
 	artemis::ComponentMapper<FlatPositionComponent> positionMapper;
+
 	artemis::ComponentMapper<SpriteComponent> spriteMapper;
 	sf::RenderTarget &window;
-	float theta, gamma;
+	CameraSystem &cameraSystem;
+
+	std::vector<int> nodeIds;
+	bool initialized;
 public:
-	FlatRenderSystem( sf::RenderTarget &rwindow ) : window(rwindow) {
+	void addNodeID(int id) {nodeIds.push_back(id);}
+	void clearNodeIDs() {nodeIds.clear();}
+
+	FlatRenderSystem( sf::RenderTarget &rwindow, CameraSystem &cameraSystemv ) : window(rwindow), cameraSystem(cameraSystemv) {
 		addComponentType<FlatPositionComponent>();
 		addComponentType<SpriteComponent>();
 	}
@@ -170,35 +209,14 @@ public:
 	virtual void initialize() {
 		positionMapper.init(*world);
 		spriteMapper.init(*world);
-		theta=gamma=0.0f;
+		initialized = false;
 	};
 
 	virtual void processEntities(artemis::ImmutableBag<artemis::Entity*> & bag) {
-		//theta=gamma=0.0f;
-		theta *= 0.98;
-		gamma *= 0.98;
-
-		float fact = 70*sin(world->getDelta())/4.0;
-		if(sf::Keyboard::isKeyPressed(sf::Keyboard::Right))
-			gamma -= fact;
-		if(sf::Keyboard::isKeyPressed(sf::Keyboard::Left))
-			gamma += fact;
-		if(sf::Keyboard::isKeyPressed(sf::Keyboard::Up))
-			theta += fact;
-		if(sf::Keyboard::isKeyPressed(sf::Keyboard::Down))
-			theta -= fact;
-
 		// Must do this because we just overwrote the default behavior
 		artemis::EntityProcessingSystem::processEntities(bag);
 
-#ifdef MINIMAP
-		sf::RectangleShape rect(sf::Vector2f(405, 105));
-		rect.setFillColor(sf::Color(0, 0, 0, 178));
-		rect.setOutlineColor(sf::Color::White);
-		rect.setOutlineThickness(1);
-		rect.setPosition(1, 1);
-		window.draw(rect);
-#endif
+		initialized = true;
 	}
 
 	void reSprite(artemis::Entity &e) {
@@ -230,16 +248,21 @@ public:
 		sf::Sprite &s = spriteMapper.get(e)->sprite;
 		float &x = positionMapper.get(e)->x;
 		float &y = positionMapper.get(e)->y;
-		x += gamma;
-		y += theta;
-		sf::Vector2f defaultScale = s.getScale();
 
+		x += cameraSystem.dgamma*500;
+		y += cameraSystem.dtheta*500;
+
+		// If terrain goes off screen; put it back on other side of screen with relevant sprite
 		if( x > window.getSize().x+16 || y > window.getSize().y+16 || x < -16 || y < -16 ) {
 			if( x > window.getSize().x+16 ) x -= window.getSize().x+32;
 			if( y > window.getSize().y+16 ) y -= window.getSize().y+32;
 			if( x < -16 ) x += window.getSize().x+32;
 			if( y < -16 ) y += window.getSize().y+32;
 
+			reSprite(e);
+		}
+
+		if( !initialized ) {
 			reSprite(e);
 		}
 
@@ -251,113 +274,51 @@ public:
 
 };
 
-struct vec2node {
-	vec2node(int xv, int yv) : x(xv), y(yv) { }
-	int x, y;
-	std::vector<int> connected;
-	bool operator<(const vec2node &rhs) const {
-		return x < rhs.x && y < rhs.y;
-	}
-	bool operator==(const vec2node &rhs) const {
-		return x == rhs.x && y == rhs.y;
-	}
-};
+inline Vector3 DoUVTransform( float u, float v, float sz, Matrix4x3 &world) {
+	float x = cos(3.14159*u) * sin(3.14159*-2*v) * sz;
+	float y = sin(3.14159*u) * sin(3.14159*-2*v) * sz;
+	float z = cos(3.14159*-2*v) * sz;
 
+	return Vector3(x, y, z) * world;
+}
 
 class MinimapSphericalRenderSystem : public artemis::EntityProcessingSystem {
 private:
 	artemis::ComponentMapper<UVPositionComponent> positionMapper;
 	artemis::ComponentMapper<SpriteComponent> spriteMapper;
 	artemis::ComponentMapper<MinimapComponent> minimapMapper;
+
 	sf::RenderTarget &window;
-	float theta, gamma;
-	Matrix4x3 worldtransform;
-	sf::Font debugfont;
+	CameraSystem &cameraSystem;
+
 	float sz;
 public:
-	MinimapSphericalRenderSystem( sf::RenderTarget &rwindow ) : window(rwindow) {
+	MinimapSphericalRenderSystem( sf::RenderTarget &rwindow, CameraSystem &cameraSystemv ) : window(rwindow), cameraSystem(cameraSystemv) {
 		addComponentType<UVPositionComponent>();
 		addComponentType<SpriteComponent>();
 		addComponentType<MinimapComponent>();
 
-		sz = 100/4;
+		sz = 25;
 	}
 
 	virtual void initialize() {
 		positionMapper.init(*world);
 		spriteMapper.init(*world);
 		minimapMapper.init(*world);
-		theta = gamma = 0.0f;
-		worldtransform.identity();
-
-		debugfont.loadFromFile("..\\media\\RiskofRainFont.ttf");
 	};
 
-	sf::Vector2f transform2D(float u, float v) {
-		float x = cos(3.14159*u) * sin(3.14159*-2*v) * sz;
-		float y = sin(3.14159*u) * sin(3.14159*-2*v) * sz;
-		float z = cos(3.14159*-2*v) * sz;
-
-		Vector3 rotated = Vector3(x, y, z) * worldtransform;
-
-		return sf::Vector2f( rotated.x+window.getSize().x/2, rotated.y+window.getSize().y/2);
-	}
-
-	bool isVisible(float u, float v) {
-		float x = cos(3.14159*u) * sin(3.14159*-2*v) * sz;
-		float y = sin(3.14159*u) * sin(3.14159*-2*v) * sz;
-		float z = cos(3.14159*-2*v) * sz;
-
-		Vector3 rotated = Vector3(x, y, z) * worldtransform;
-
-		return rotated.z > 0.0f;
-	}
-
-	virtual void processEntities(artemis::ImmutableBag<artemis::Entity*> & bag) {
-		//theta=gamma=0.0f;
-
-		theta *= 0.98;
-		gamma *= 0.98;
-
-		float fact = 0.07*world->getDelta()/2.0f;
-
-		if(sf::Keyboard::isKeyPressed(sf::Keyboard::Right))
-			gamma -= fact;
-		if(sf::Keyboard::isKeyPressed(sf::Keyboard::Left))
-			gamma += fact;
-		if(sf::Keyboard::isKeyPressed(sf::Keyboard::Up))
-			theta -= fact;
-		if(sf::Keyboard::isKeyPressed(sf::Keyboard::Down))
-			theta += fact;
-
-		Matrix4x3 m1;
-		m1.setupRotate( 1, theta );
-
-		Matrix4x3 m2;
-		m2.setupRotate( 2, gamma );
-
-		worldtransform = worldtransform * (m1*m2);
-
-		// Must do this because we just overwrote the default behavior
-		artemis::EntityProcessingSystem::processEntities(bag);
-	}
-
 	virtual void processEntity(artemis::Entity &e) {
-		float u = positionMapper.get(e)->u, v = positionMapper.get(e)->v;
-		float x = cos(3.14159*u) * sin(3.14159*-2*v) * sz;
-		float y = sin(3.14159*u) * sin(3.14159*-2*v) * sz;
-		float z = cos(3.14159*-2*v) * sz;
-
-		Vector3 rotated = Vector3(x, y, z) * worldtransform;
-
-		Matrix4x3 sun;
-		sun.setupLocalToParent( Vector3(0, 0, 0), EulerAngles(0.3, 1.8, 0) );
-		Vector3 sunrotated = Vector3(x, y, z) * sun;
+		Vector3 rotated = DoUVTransform( positionMapper.get(e)->u, positionMapper.get(e)->v, sz, cameraSystem.worldtransform );
+		Vector3 sunrotated = DoUVTransform( positionMapper.get(e)->u, positionMapper.get(e)->v, sz, cameraSystem.sun);
 
 		spriteMapper.get(e)->UpdateAnimation();
+
 		sf::Sprite &s = spriteMapper.get(e)->sprite;
+
+		// We fiddle with scale a bit here; so preserve it to re-apply at end
 		sf::Vector2f defaultScale = s.getScale();
 
+		// Set the sprite's position, default colour before sun
 		s.setPosition( rotated.x+window.getSize().x-125/4, rotated.y+window.getSize().y-125/4 );
 		s.setColor(sf::Color(255, 255, 255, 255));
 
@@ -368,13 +329,14 @@ public:
 		if( dist > sz*0.95) fact = 0.15;
 		s.setScale(fact*defaultScale.x, fact*defaultScale.y);
 
-
+		// Terrain pieces need to appear bit bigger than normal things
 		if( e.getComponent<TerrainNodeComponent>() != nullptr ) {
 			s.scale(1.5f, 1.5f);
 		} else {
 			s.scale(0.3f, 0.3f);
 		}
 
+		// Darken if on other side of sun
 		if( sunrotated.z < 0.0f) {
 			float factor = 255-(-1.5*sunrotated.z/(sz/200))/2;
 			if(factor < 0) factor = 0;
@@ -382,15 +344,11 @@ public:
 		}
 
 		if( rotated.z > 0.0f ) {
-			if( s.getPosition().x > -100 && s.getPosition().y > -100 && s.getPosition().x < window.getSize().x+100 && s.getPosition().y < window.getSize().y +100) {
+			int threshold = 100;
+			if( s.getPosition().x > -threshold && s.getPosition().y > -threshold && s.getPosition().x < window.getSize().x+threshold && s.getPosition().y < window.getSize().y +threshold) {
 				window.draw( s );
 			}
 		} 
-
-		s.setColor(sf::Color(255, 255, 255, 34));
-		if( s.getPosition().x > 0 && s.getPosition().y > 0 && s.getPosition().x < window.getSize().x && s.getPosition().y < window.getSize().y && rotated.z > 0.0f) {
-			s.setColor(sf::Color(255, 255, 255, 255));
-		}
 
 		s.setScale( defaultScale );
 	};
@@ -401,12 +359,11 @@ private:
 	artemis::ComponentMapper<UVPositionComponent> positionMapper;
 	artemis::ComponentMapper<SpriteComponent> spriteMapper;
 	sf::RenderTarget &window;
-	float theta, gamma;
-	Matrix4x3 worldtransform;
-	sf::Font debugfont;
-
+	CameraSystem &cameraSystem;
+	FlatRenderSystem &flatSystem;
 public:
-	UVSphericalRenderSystem( sf::RenderTarget &rwindow ) : window(rwindow) {
+	UVSphericalRenderSystem( sf::RenderTarget &rwindow, CameraSystem &cameraSystemv, FlatRenderSystem &flatSystemv )
+		: window(rwindow), cameraSystem(cameraSystemv), flatSystem(flatSystemv) {
 		addComponentType<UVPositionComponent>();
 		addComponentType<SpriteComponent>();
 	}
@@ -414,129 +371,60 @@ public:
 	virtual void initialize() {
 		positionMapper.init(*world);
 		spriteMapper.init(*world);
-		theta = gamma = 0.0f;
-		worldtransform.identity();
-
-		debugfont.loadFromFile("..\\media\\RiskofRainFont.ttf");
 	};
 
-	sf::Vector2f transform2D(float u, float v) {
-		
-
-		float sz = 2000.0;
-		if( sf::Keyboard::isKeyPressed(sf::Keyboard::Space)) {
-			sz = 400;
-		}
-
-		float x = cos(3.14159*u) * sin(3.14159*-2*v) * sz;
-		float y = sin(3.14159*u) * sin(3.14159*-2*v) * sz;
-		float z = cos(3.14159*-2*v) * sz;
-
-		Vector3 rotated = Vector3(x, y, z) * worldtransform;
-
-		return sf::Vector2f( rotated.x+window.getSize().x/2, rotated.y+window.getSize().y/2);
-	}
-
-	bool isVisible(float u, float v) {
-		float sz = 2000.0;
-		if( sf::Keyboard::isKeyPressed(sf::Keyboard::Space)) {
-			sz = 400;
-		}
-		float x = cos(3.14159*u) * sin(3.14159*-2*v) * sz;
-		float y = sin(3.14159*u) * sin(3.14159*-2*v) * sz;
-		float z = cos(3.14159*-2*v) * sz;
-
-		Vector3 rotated = Vector3(x, y, z) * worldtransform;
-
-		return rotated.z > 0.0f;
-	}
-
-	virtual void processEntities(artemis::ImmutableBag<artemis::Entity*> & bag) {
-		//theta=gamma=0.0f;
-
-		theta *= 0.98;
-		gamma *= 0.98;
-
-		float fact = 0.07*world->getDelta()/2.0f;
-
-		if(sf::Keyboard::isKeyPressed(sf::Keyboard::Right))
-			gamma -= fact;
-		if(sf::Keyboard::isKeyPressed(sf::Keyboard::Left))
-			gamma += fact;
-		if(sf::Keyboard::isKeyPressed(sf::Keyboard::Up))
-			theta -= fact;
-		if(sf::Keyboard::isKeyPressed(sf::Keyboard::Down))
-			theta += fact;
-
-		Matrix4x3 m1;
-		m1.setupRotate( 1, theta );
-
-		Matrix4x3 m2;
-		m2.setupRotate( 2, gamma );
-
-		worldtransform = worldtransform * (m1*m2);
-
-		// Must do this because we just overwrote the default behavior
+	virtual void processEntities( artemis::ImmutableBag<artemis::Entity*> &bag ) {
+		flatSystem.clearNodeIDs();
 		artemis::EntityProcessingSystem::processEntities(bag);
 	}
 
 	virtual void processEntity(artemis::Entity &e) {
-		float sz = 2000.0/4;
+		float sz = 500.0;
 
-		float u = positionMapper.get(e)->u, v = positionMapper.get(e)->v;
-		float x = cos(3.14159*u) * sin(3.14159*-2*v) * sz;
-		float y = sin(3.14159*u) * sin(3.14159*-2*v) * sz;
-		float z = cos(3.14159*-2*v) * sz;
-
-		Vector3 rotated = Vector3(x, y, z) * worldtransform;
-
-		Matrix4x3 sun;
-		sun.setupLocalToParent( Vector3(0, 0, 0), EulerAngles(0.3, 1.8, 0) );
-		Vector3 sunrotated = Vector3(x, y, z) * sun;
+		Vector3 rotated = DoUVTransform( positionMapper.get(e)->u, positionMapper.get(e)->v, sz, cameraSystem.worldtransform );
+		Vector3 sunrotated = DoUVTransform( positionMapper.get(e)->u, positionMapper.get(e)->v, sz, cameraSystem.sun);
 
 		spriteMapper.get(e)->UpdateAnimation();
+
 		sf::Sprite &s = spriteMapper.get(e)->sprite;
+
+		// We fiddle with scale a bit here; so preserve it to re-apply at end
 		sf::Vector2f defaultScale = s.getScale();
 
+		// Set the sprite's position, default colour before sun
 		s.setPosition( rotated.x+window.getSize().x/2, rotated.y+window.getSize().y/2 );
 		s.setColor(sf::Color(255, 255, 255, 255));
-		
+
+		// Darken if on other side of sun
 		if( sunrotated.z < 0.0f) {
 			float factor = 255-(-1.5*sunrotated.z/(sz/200))/2;
 			if(factor < 0) factor = 0;
 			s.setColor(sf::Color(factor, factor, factor, 255));
 		}
 
+		// Update parameters on UV component for use in other areas
 		positionMapper.get(e)->screen_x = s.getPosition().x;
 		positionMapper.get(e)->screen_y = s.getPosition().y;
 		positionMapper.get(e)->colour = s.getColor();
-		
-		if( e.getComponent<TerrainNodeComponent>() != nullptr ) {
-				s.setColor(sf::Color(255, 255, 255, 0));
-		}
 
 		if( rotated.z > 0.0f ) {
-			if( s.getPosition().x > -100 && s.getPosition().y > -100 && s.getPosition().x < window.getSize().x+100 && s.getPosition().y < window.getSize().y +100) {
-				window.draw( s );
+			int threshold = 100;
+			// If on the screen
+			if( s.getPosition().x > -threshold && s.getPosition().y > -threshold && s.getPosition().x < window.getSize().x+threshold && s.getPosition().y < window.getSize().y +threshold) {
+				
+				// Terrain nodes are invisible on this renderer
+				if( e.getComponent<TerrainNodeComponent>() != nullptr ) {
+					// (Cleared at the beginning of every frame in processentities)
+					flatSystem.addNodeID(e.getId());
+				} else {
+					window.draw( s );
+				}
+
+				positionMapper.get(e)->on_screen = true;
 			}
 		} else {
-			positionMapper.get(e)->screen_x = 2000;
-			positionMapper.get(e)->screen_y = 2000;
+			positionMapper.get(e)->on_screen = false;
 		}
-
-		s.setColor(sf::Color(255, 255, 255, 34));
-		if( s.getPosition().x > 0 && s.getPosition().y > 0 && s.getPosition().x < window.getSize().x && s.getPosition().y < window.getSize().y && rotated.z > 0.0f) {
-			s.setColor(sf::Color(255, 255, 255, 255));
-		}
-
-		//minimap
-		if( v > 0.5 )
-			s.setPosition( u*200, v*200-100 ); 
-		else
-			s.setPosition( u*200+200, -v*200+100 );
-
-		s.setScale(0.1*defaultScale.x, 0.1*defaultScale.y);
-
 
 		s.setScale( defaultScale );
 	};
@@ -566,28 +454,40 @@ void PlaceRandom(artemis::EntityManager* em, int n, std::string type, bool (*res
 			ent.addComponent(new SpriteComponent(type, 1.0f, frames));
 			if( isNode ) {
 				ent.addComponent( new TerrainNodeComponent( type ) );
-				nodeIds.push_back(ent.getId());
 			}
 			ent.addComponent(new MinimapComponent());
 			ent.refresh();
 		} else {
-			--i;
+			--i; // Failed to place
 		}
 	}
 }
 
 int main(int argc, char **argv) {
-	
+	// Artemis containers
     artemis::World world;
     artemis::SystemManager * sm = world.getSystemManager();
     artemis::EntityManager * em = world.getEntityManager();
 
+	// SFML rendering devices
 	sf::RenderWindow realwindow(sf::VideoMode(1280, 720), "GamePrototype", sf::Style::Default );
 	sf::RenderTexture window; window.create(427, 240);
-	UVSphericalRenderSystem * sphereRenderSys = (UVSphericalRenderSystem*)sm->setSystem(new UVSphericalRenderSystem(window));
-	FlatRenderSystem * flatRenderSys = (FlatRenderSystem*)sm->setSystem(new FlatRenderSystem(window));
-	StarSystem * starSys = (StarSystem*)sm->setSystem(new StarSystem(window));
-	MinimapSphericalRenderSystem *minimapRenderSys = (MinimapSphericalRenderSystem*)sm->setSystem(new MinimapSphericalRenderSystem(window));
+
+	// Create all systems
+	CameraSystem *cameraSys =
+		(CameraSystem*)sm->setSystem(new CameraSystem());
+
+	FlatRenderSystem * flatRenderSys =
+		(FlatRenderSystem*)sm->setSystem(new FlatRenderSystem(window, *cameraSys));
+
+	UVSphericalRenderSystem * sphereRenderSys =
+		(UVSphericalRenderSystem*)sm->setSystem(new UVSphericalRenderSystem(window, *cameraSys, *flatRenderSys));
+
+	StarSystem * starSys =
+		(StarSystem*)sm->setSystem(new StarSystem(window, *cameraSys));
+
+	MinimapSphericalRenderSystem *minimapRenderSys =
+		(MinimapSphericalRenderSystem*)sm->setSystem(new MinimapSphericalRenderSystem(window, *cameraSys));
 
     sm->initializeAll();
 
@@ -608,6 +508,7 @@ int main(int argc, char **argv) {
 	PlaceRandom(em, 40, "Plant1.png", AvoidPolarRestrict);
 	PlaceRandom(em, 40, "Plant2.png", AvoidPolarRestrict);
 
+	// Terrain entities
 	for(int i = 0; i != (int)(ceil(window.getSize().x/16.0f)+2); ++i) {
 		for(int j = 0; j != (int)(ceil(window.getSize().y/16.0f)+2); ++j) {
 			artemis::Entity & player = em->create();
@@ -617,18 +518,13 @@ int main(int argc, char **argv) {
 		}
 	}
 
+	// Stars for minimap
 	for(int i = 0; i != 50; ++i ) {
 		artemis::Entity &e = em->create();
 		e.addComponent(new FlatPositionComponent(window.getSize().x-(rand()%220)/4-36/4, window.getSize().y-(rand()%220)/4-36/4));
 		e.addComponent(new StarComponent() );
 		e.refresh();
 	}
-
-	artemis::Entity & player = em->create();
-	player.addComponent(new PlayerComponent() );
-	player.addComponent(new UVPositionComponent(0.2, 0.2));
-	player.addComponent(new SpriteComponent("point3.png"));
-	player.refresh();
 
 	sf::Clock clock;
 
@@ -639,6 +535,8 @@ int main(int argc, char **argv) {
 
 	sf::Sprite pixelrenderer;
 	pixelrenderer.setScale(3, 3);
+
+	bool firstFrame = true;
 
 	while (realwindow.isOpen()) {
 		sf::Event event;
@@ -653,11 +551,17 @@ int main(int argc, char **argv) {
 
 		window.clear(sf::Color(66, 55, 42));
 
-		// draw everything here...
+		cameraSys->process();
+
+		// drawing
+		if( firstFrame ) { // This is so that terrain nodes exist before initial spriting action
+			firstFrame = false;
+			sphereRenderSys->process();
+		}
 		flatRenderSys->process();
 		sphereRenderSys->process();
-
 		minimapRenderSys->process();
+
 		window.draw(uispr);
 		starSys->process();
 
