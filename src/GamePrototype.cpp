@@ -1,3 +1,5 @@
+#define _WIN32
+
 #include <Artemis\Artemis.h>
 #include <SFML\Graphics.hpp>
 #include <iostream>
@@ -78,6 +80,11 @@ public:
 class MinimapComponent : public artemis::Component {
 public:
 	MinimapComponent() {}
+};
+
+class BackgroundTerrainComponent : public artemis::Component {
+public:
+	BackgroundTerrainComponent() {}
 };
 
 class StarComponent : public artemis::Component {
@@ -173,7 +180,6 @@ private:
 
 class StarSystem : public artemis::EntityProcessingSystem {
 	artemis::ComponentMapper<FlatPositionComponent> positionMapper;
-	artemis::ComponentMapper<StarComponent> starMapper;
 
 	sf::Texture starTex;
 	sf::Sprite starSprite;
@@ -190,7 +196,6 @@ public:
 
 	virtual void initialize() {
 		positionMapper.init(*world);
-		starMapper.init(*world);
 	}
 
 	virtual void processEntity(artemis::Entity &e) {
@@ -212,11 +217,11 @@ public:
 	}
 };
 
-class FlatRenderSystem : public artemis::EntityProcessingSystem {
+class BackgroundTerrainRenderSystem : public artemis::EntityProcessingSystem {
 private:
 	artemis::ComponentMapper<FlatPositionComponent> positionMapper;
-
 	artemis::ComponentMapper<SpriteComponent> spriteMapper;
+
 	sf::RenderTarget &window;
 	CameraSystem &cameraSystem;
 
@@ -226,9 +231,10 @@ public:
 	void addNodeID(int id) {nodeIds.push_back(id);}
 	void clearNodeIDs() {nodeIds.clear();}
 
-	FlatRenderSystem( sf::RenderTarget &rwindow, CameraSystem &cameraSystemv ) : window(rwindow), cameraSystem(cameraSystemv) {
+	BackgroundTerrainRenderSystem( sf::RenderTarget &rwindow, CameraSystem &cameraSystemv ) : window(rwindow), cameraSystem(cameraSystemv) {
 		addComponentType<FlatPositionComponent>();
 		addComponentType<SpriteComponent>();
+		addComponentType<BackgroundTerrainComponent>();
 	}
 
 	virtual void initialize() {
@@ -393,9 +399,9 @@ private:
 	artemis::ComponentMapper<SpriteComponent> spriteMapper;
 	sf::RenderTarget &window;
 	CameraSystem &cameraSystem;
-	FlatRenderSystem &flatSystem;
+	BackgroundTerrainRenderSystem &flatSystem;
 public:
-	UVSphericalRenderSystem( sf::RenderTarget &rwindow, CameraSystem &cameraSystemv, FlatRenderSystem &flatSystemv )
+	UVSphericalRenderSystem( sf::RenderTarget &rwindow, CameraSystem &cameraSystemv, BackgroundTerrainRenderSystem &flatSystemv )
 		: window(rwindow), cameraSystem(cameraSystemv), flatSystem(flatSystemv) {
 		addComponentType<UVPositionComponent>();
 		addComponentType<SpriteComponent>();
@@ -510,11 +516,11 @@ int main(int argc, char **argv) {
 	CameraSystem *cameraSys =
 		(CameraSystem*)sm->setSystem(new CameraSystem());
 
-	FlatRenderSystem * flatRenderSys =
-		(FlatRenderSystem*)sm->setSystem(new FlatRenderSystem(window, *cameraSys));
+	BackgroundTerrainRenderSystem * terrainRenderSys =
+		(BackgroundTerrainRenderSystem*)sm->setSystem(new BackgroundTerrainRenderSystem(window, *cameraSys));
 
-	UVSphericalRenderSystem * sphereRenderSys =
-		(UVSphericalRenderSystem*)sm->setSystem(new UVSphericalRenderSystem(window, *cameraSys, *flatRenderSys));
+	UVSphericalRenderSystem * uvRenderSys =
+		(UVSphericalRenderSystem*)sm->setSystem(new UVSphericalRenderSystem(window, *cameraSys, *terrainRenderSys));
 
 	StarSystem * starSys =
 		(StarSystem*)sm->setSystem(new StarSystem(window, *cameraSys));
@@ -547,10 +553,11 @@ int main(int argc, char **argv) {
 	// Add all the background terrain entities
 	for(int i = 0; i != (int)(ceil(window.getSize().x/16.0f)+2); ++i) {
 		for(int j = 0; j != (int)(ceil(window.getSize().y/16.0f)+2); ++j) {
-			artemis::Entity & player = em->create();
-			player.addComponent(new FlatPositionComponent(16*i-16, 16*j-16));
-			player.addComponent(new SpriteComponent("Desert1.png", 1.005f));
-			player.refresh();
+			artemis::Entity & e = em->create();
+			e.addComponent(new FlatPositionComponent(16*i-16, 16*j-16));
+			e.addComponent(new SpriteComponent("Desert1.png", 1.005f));
+			e.addComponent(new BackgroundTerrainComponent());
+			e.refresh();
 		}
 	}
 
@@ -585,10 +592,10 @@ int main(int argc, char **argv) {
 		// drawing
 		if( firstFrame ) { // This is so that terrain nodes exist before initial spriting action
 			firstFrame = false;
-			sphereRenderSys->process();
+			uvRenderSys->process();
 		}
-		flatRenderSys->process();
-		sphereRenderSys->process();
+		terrainRenderSys->process();
+		uvRenderSys->process();
 		minimapRenderSys->process();
 
 		window.draw(uispr);
