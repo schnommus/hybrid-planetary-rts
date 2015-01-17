@@ -21,9 +21,6 @@
     </Filter>
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="..\src\GamePrototype.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="..\thirdparty\gamemath\EulerAngles.cpp">
       <Filter>Source Files\GameMath</Filter>
     </ClCompile>
@@ -39,11 +36,26 @@
     <ClCompile Include="..\thirdparty\gamemath\RotationMatrix.cpp">
       <Filter>Source Files\GameMath</Filter>
     </ClCompile>
+    <ClCompile Include="..\src\Components.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\CameraSystem.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\DebugSystems.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\MinimapSystem.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\RenderSystem.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\Main.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="..\src\VecX.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="..\thirdparty\gamemath\vector3.h">
       <Filter>Header Files\GameMath</Filter>
     </ClInclude>
@@ -67,6 +79,24 @@
     </ClInclude>
     <ClInclude Include="..\thirdparty\gamemath\RotationMatrix.h">
       <Filter>Header Files\GameMath</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\Components.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\ProcessingSystem.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\CameraSystem.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\DebugSystems.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\MinimapSystem.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\RenderSystem.h">
+      <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>

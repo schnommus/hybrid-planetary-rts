@@ -88,7 +88,12 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ClCompile Include="..\src\GamePrototype.cpp" />
+    <ClCompile Include="..\src\CameraSystem.cpp" />
+    <ClCompile Include="..\src\Components.cpp" />
+    <ClCompile Include="..\src\DebugSystems.cpp" />
+    <ClCompile Include="..\src\Main.cpp" />
+    <ClCompile Include="..\src\MinimapSystem.cpp" />
+    <ClCompile Include="..\src\RenderSystem.cpp" />
     <ClCompile Include="..\thirdparty\gamemath\EulerAngles.cpp" />
     <ClCompile Include="..\thirdparty\gamemath\MathUtil.cpp" />
     <ClCompile Include="..\thirdparty\gamemath\Matrix4x3.cpp" />
@@ -96,7 +101,12 @@
     <ClCompile Include="..\thirdparty\gamemath\RotationMatrix.cpp" />
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="..\src\VecX.h" />
+    <ClInclude Include="..\src\CameraSystem.h" />
+    <ClInclude Include="..\src\Components.h" />
+    <ClInclude Include="..\src\DebugSystems.h" />
+    <ClInclude Include="..\src\MinimapSystem.h" />
+    <ClInclude Include="..\src\ProcessingSystem.h" />
+    <ClInclude Include="..\src\RenderSystem.h" />
     <ClInclude Include="..\thirdparty\gamemath\EulerAngles.h" />
     <ClInclude Include="..\thirdparty\gamemath\Font.h" />
     <ClInclude Include="..\thirdparty\gamemath\MathUtil.h" />
