@@ -91,6 +91,7 @@ public:
 	PlayerComponent () {}
 };
 
+// This is just a helper for readability on systems that don't actually process any entities
 namespace artemis {
 	class ProcessingSystem : public artemis::EntityProcessingSystem {
 	private:
@@ -144,6 +145,30 @@ protected:
 
 private:
 	float otheta, ogamma;
+};
+
+class DrawFPSSystem : public artemis::ProcessingSystem {
+public:
+	DrawFPSSystem( sf::RenderTarget &rwindow) : window(rwindow) { }
+
+protected:
+	virtual void doProcessing() {
+		std::ostringstream oss;
+		oss << int(1.0f/world->getDelta()) << " FPS";
+		fps_text.setString(oss.str());
+		window.draw(fps_text);
+	}
+
+	virtual void initialize() {
+		debugfont.loadFromFile("..//media//RiskofRainFont.ttf");
+		fps_text.setFont( debugfont );
+		fps_text.setCharacterSize(8);
+	}
+
+private:
+	sf::Text fps_text;
+	sf::Font debugfont;
+	sf::RenderTarget &window;
 };
 
 class StarSystem : public artemis::EntityProcessingSystem {
@@ -305,6 +330,14 @@ public:
 		positionMapper.init(*world);
 		spriteMapper.init(*world);
 		minimapMapper.init(*world);
+
+		// Create all the stars
+		for(int i = 0; i != 50; ++i ) {
+			artemis::Entity &e = world->createEntity();
+			e.addComponent(new FlatPositionComponent(window.getSize().x-(rand()%220)/4-36/4, window.getSize().y-(rand()%220)/4-36/4));
+			e.addComponent(new StarComponent() );
+			e.refresh();
+		}
 	};
 
 	virtual void processEntity(artemis::Entity &e) {
@@ -489,6 +522,9 @@ int main(int argc, char **argv) {
 	MinimapSphericalRenderSystem *minimapRenderSys =
 		(MinimapSphericalRenderSystem*)sm->setSystem(new MinimapSphericalRenderSystem(window, *cameraSys));
 
+	DrawFPSSystem * fpsSys =
+		(DrawFPSSystem*)sm->setSystem(new DrawFPSSystem(window));
+
     sm->initializeAll();
 
     PlaceRandom(em, 170, "Desert1.png", AvoidPolarRestrict, true);
@@ -508,7 +544,7 @@ int main(int argc, char **argv) {
 	PlaceRandom(em, 40, "Plant1.png", AvoidPolarRestrict);
 	PlaceRandom(em, 40, "Plant2.png", AvoidPolarRestrict);
 
-	// Terrain entities
+	// Add all the background terrain entities
 	for(int i = 0; i != (int)(ceil(window.getSize().x/16.0f)+2); ++i) {
 		for(int j = 0; j != (int)(ceil(window.getSize().y/16.0f)+2); ++j) {
 			artemis::Entity & player = em->create();
@@ -516,14 +552,6 @@ int main(int argc, char **argv) {
 			player.addComponent(new SpriteComponent("Desert1.png", 1.005f));
 			player.refresh();
 		}
-	}
-
-	// Stars for minimap
-	for(int i = 0; i != 50; ++i ) {
-		artemis::Entity &e = em->create();
-		e.addComponent(new FlatPositionComponent(window.getSize().x-(rand()%220)/4-36/4, window.getSize().y-(rand()%220)/4-36/4));
-		e.addComponent(new StarComponent() );
-		e.refresh();
 	}
 
 	sf::Clock clock;
@@ -548,6 +576,7 @@ int main(int argc, char **argv) {
 		//logic
 		world.loopStart();
 		world.setDelta( clock.restart().asSeconds() );
+		
 
 		window.clear(sf::Color(66, 55, 42));
 
@@ -564,6 +593,7 @@ int main(int argc, char **argv) {
 
 		window.draw(uispr);
 		starSys->process();
+		fpsSys->process();
 
 		window.display();
 
