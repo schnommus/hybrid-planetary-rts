@@ -1,6 +1,6 @@
 #pragma once
 
-#include <Artemis\Artemis.h>
+#include <Artemis/Artemis.h>
 
 namespace artemis {
 	class ProcessingSystem : public artemis::EntityProcessingSystem {
