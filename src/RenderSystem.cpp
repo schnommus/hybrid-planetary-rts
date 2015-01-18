@@ -13,6 +13,20 @@ inline Vector3 DoUVTransform (float u, float v, float sz, Matrix4x3 & world)
 	return Vector3(x, y, z) * world;
 }
 
+inline sf::Vector2f ReverseUVTransform (Vector3 in, float sz, Matrix4x3 & world) {
+	in = in * inverse(world);
+	sf::Vector2f out;
+	
+	float dx = in.x/sz;
+	float dy = -in.y/sz;
+	float dz = in.z/sz;
+	float xydist = sqrt( dx*dx + dy*dy );
+	out.x = (2.0f*atan( (xydist + dx)/dy ))/3.14159f;
+	out.y = atan( (1.0f-dz)/xydist )/3.14159f;
+
+	return out;
+}
+
 
 void BackgroundTerrainRenderSystem::addNodeID (int id) {nodeIds.push_back(id);}
 void BackgroundTerrainRenderSystem::clearNodeIDs () {nodeIds.clear();}
@@ -38,6 +52,8 @@ void BackgroundTerrainRenderSystem::processEntities (artemis::ImmutableBag <arte
 }
 
 void BackgroundTerrainRenderSystem::reSprite (artemis::Entity & e) {
+	if( nodeIds.empty() ) return;
+
 	sf::Sprite &s = spriteMapper.get(e)->sprite;
 	float &x = positionMapper.get(e)->x;
 	float &y = positionMapper.get(e)->y;
@@ -59,7 +75,6 @@ void BackgroundTerrainRenderSystem::reSprite (artemis::Entity & e) {
 	}
 
 	s.setTexture( * ( (SpriteComponent*)world->getEntityManager()->getEntity(nodeIds[current]).getComponent<SpriteComponent>())->sprite.getTexture() );
-	s.setColor( ( (UVPositionComponent*)world->getEntityManager()->getEntity(nodeIds[current]).getComponent<UVPositionComponent>())->colour );
 }
 
 void BackgroundTerrainRenderSystem::processEntity (artemis::Entity & e) {
@@ -83,6 +98,28 @@ void BackgroundTerrainRenderSystem::processEntity (artemis::Entity & e) {
 	if( !initialized ) {
 		reSprite(e);
 	}
+
+	//Use real position as uv index for lighting
+	float sz = 500.0f;
+	x -= window.getSize().x/2;
+	y -= window.getSize().y/2;
+
+	float z = sqrt( sz*sz-x*x-y*y );
+	sf::Vector2f uv = ReverseUVTransform( Vector3(x, y, z), sz, cameraSystem.worldtransform );
+	Vector3 sunrotated = DoUVTransform( uv.x, uv.y, sz, cameraSystem.sun);
+
+	if( sunrotated.z < 0) {
+		float factor = 255-(1.5*abs(sunrotated.z)/(sz/200))/2;
+		if(factor > 255) factor = 255;
+		if(factor < 0) factor = 0;
+		s.setColor(sf::Color(factor, factor, factor, 255));
+	} else {
+		s.setColor(sf::Color(255, 255, 255, 255));
+	}
+
+	x += window.getSize().x/2;
+	y += window.getSize().y/2;
+
 
 	s.setPosition( x, y );
 
@@ -143,6 +180,9 @@ void UVSphericalRenderSystem::processEntity (artemis::Entity & e) {
 			if( e.getComponent<TerrainNodeComponent>() != nullptr ) {
 				// (Cleared at the beginning of every frame in processentities)
 				flatSystem.addNodeID(e.getId());
+				s.setColor(sf::Color(255, 255, 0, 255));
+				s.setRotation(45);
+				window.draw( s );
 			} else {
 				window.draw( s );
 			}

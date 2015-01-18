@@ -8,6 +8,7 @@
 class CameraSystem;
 
 Vector3 DoUVTransform (float u, float v, float sz, Matrix4x3 & world);
+sf::Vector2f ReverseUVTransform (Vector3 in, float sz, Matrix4x3 & world);
 
 class BackgroundTerrainRenderSystem : public artemis::EntityProcessingSystem
 {
