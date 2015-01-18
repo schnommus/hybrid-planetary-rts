@@ -1,7 +1,7 @@
 #pragma once
 
 #include "ProcessingSystem.h"
-#include <..\gamemath\Matrix4x3.h>
+#include <../gamemath/Matrix4x3.h>
 
 class CameraSystem : public artemis::ProcessingSystem {
 public:

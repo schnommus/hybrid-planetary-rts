@@ -1,7 +1,7 @@
 #pragma once
 
-#include <Artemis\Artemis.h>
-#include <SFML\Graphics.hpp>
+#include <Artemis/Artemis.h>
+#include <SFML/Graphics.hpp>
 
 class UVPositionComponent : public artemis::Component {
 public:

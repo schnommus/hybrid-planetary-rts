@@ -8,7 +8,7 @@ StarSystem::StarSystem (sf::RenderTarget & rwindow, CameraSystem & cameraSystemv
 	: window (rwindow), cameraSystem (cameraSystemv) {
 	addComponentType<StarComponent>();
 	addComponentType<FlatPositionComponent>();
-	starTex.loadFromFile("..\\media\\star.png");
+	starTex.loadFromFile("../media/star.png");
 	starSprite.setTexture(starTex);
 }
 

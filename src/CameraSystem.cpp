@@ -1,8 +1,8 @@
 #include "CameraSystem.h"
 
-#include <SFML\Graphics.hpp>
-#include <..\gamemath\EulerAngles.h>
-#include <..\gamemath\vector3.h>
+#include <SFML/Graphics.hpp>
+#include <../gamemath/EulerAngles.h>
+#include <../gamemath/vector3.h>
 
 void CameraSystem::doProcessing () {
 	// Movement acc/decceleration

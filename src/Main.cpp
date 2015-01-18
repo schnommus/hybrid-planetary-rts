@@ -99,7 +99,7 @@ int main(int argc, char **argv) {
 
 	sf::Clock clock;
 
-	sf::Texture uitex; uitex.loadFromFile("..\\media\\uiOverlay.png");
+	sf::Texture uitex; uitex.loadFromFile("../media/uiOverlay.png");
 	sf::Sprite uispr(uitex);
 	uispr.setScale(1, 1);
 	uispr.setPosition(window.getSize().x-109, window.getSize().y-63);

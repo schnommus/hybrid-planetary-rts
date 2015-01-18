@@ -18,7 +18,7 @@ FlatPositionComponent::FlatPositionComponent (float xv, float yv) {
 
 SpriteComponent::SpriteComponent (std::string directory, float scale, int frames)
 	: nFrames (frames) {
-	texture.loadFromFile("..\\media\\" + directory);
+	texture.loadFromFile("../media/" + directory);
 	sprite.setTexture(texture);
 	sprite.setTextureRect( sf::IntRect((rand()%nFrames)*sprite.getLocalBounds().width/frames, 0, sprite.getLocalBounds().width/frames, sprite.getLocalBounds().height ) );
 	sprite.setScale(scale, scale);
