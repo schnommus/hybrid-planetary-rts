@@ -13,7 +13,7 @@
 #include <assert.h>
 #include <math.h>
 
-#include "Vector3.h"
+#include "vector3.h"
 #include "EulerAngles.h"
 #include "Quaternion.h"
 #include "RotationMatrix.h"

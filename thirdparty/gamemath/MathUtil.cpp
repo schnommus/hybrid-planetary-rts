@@ -11,7 +11,7 @@
 #include <math.h>
 
 #include "MathUtil.h"
-#include "Vector3.h"
+#include "vector3.h"
 
 const Vector3 kZeroVector(0.0f, 0.0f, 0.0f);
 
