@@ -117,6 +117,11 @@ void BackgroundTerrainRenderSystem::processEntity (artemis::Entity & e) {
 		s.setColor(sf::Color(255, 255, 255, 255));
 	}
 
+	// Darken terrain around the edges slightly for a vigniette effect
+	sf::Color c = s.getColor();
+	float fact = pow( sqrt(x*x+y*y)/30.0f, 2);
+	s.setColor( sf::Color(c.r-fact>0?c.r-fact:0, c.g-fact>0?c.g-fact:0, c.b-fact>0?c.b-fact:0, c.a) );
+
 	x += window.getSize().x/2;
 	y += window.getSize().y/2;
 
@@ -182,7 +187,7 @@ void UVSphericalRenderSystem::processEntity (artemis::Entity & e) {
 				flatSystem.addNodeID(e.getId());
 				s.setColor(sf::Color(255, 255, 0, 255));
 				s.setRotation(45);
-				window.draw( s );
+				//window.draw( s );
 			} else {
 				window.draw( s );
 			}
