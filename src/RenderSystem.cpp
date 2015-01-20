@@ -187,7 +187,7 @@ void UVSphericalRenderSystem::processEntity (artemis::Entity & e) {
 				flatSystem.addNodeID(e.getId());
 				s.setColor(sf::Color(255, 255, 0, 255));
 				s.setRotation(45);
-				//window.draw( s );
+				window.draw( s );
 			} else {
 				window.draw( s );
 			}

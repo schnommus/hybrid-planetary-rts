@@ -1,0 +1,6 @@
+-Add LevelEditing ProcessingSystem class; and put all level stuff in there.
+-Show string of currently placing type
+-Just pass everything relevent to the leveleditor which will hack it's way into other systems (if necessary)
+-It should be possible to render terrain nodes within the leveleditor class without interfering with the RenderSystem
+-Gotta delete nodes that are nearby within a threshold.
+-Also just adding a delete function in the first place would be useful

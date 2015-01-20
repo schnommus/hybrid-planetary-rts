@@ -4,6 +4,8 @@
 #include "MinimapSystem.h"
 #include "ProcessingSystem.h"
 #include "RenderSystem.h"
+#include "LevelEditor.h"
+
 #include <../gamemath/vector3.h>
 
 bool NoRestrict(float u, float v) {
@@ -68,6 +70,9 @@ int main(int argc, char **argv) {
 	DrawFPSSystem * fpsSys =
 		(DrawFPSSystem*)sm->setSystem(new DrawFPSSystem(window));
 
+	LevelEditorSystem * levelEditorSys =
+		(LevelEditorSystem*)sm->setSystem(new LevelEditorSystem(window, realwindow, cameraSys, terrainRenderSys, uvRenderSys));
+
     sm->initializeAll();
 
     PlaceRandom(em, 170, "Desert1.png", AvoidPolarRestrict, true);
@@ -109,15 +114,6 @@ int main(int argc, char **argv) {
 	pixelrenderer.setScale(3, 3);
 
 	bool firstFrame = true;
-	
-	std::vector<std::string> nodeTypes;
-	nodeTypes.push_back("Desert1.png");
-	nodeTypes.push_back("Desert2.png");
-	nodeTypes.push_back("Desert3.png");
-	nodeTypes.push_back("Snow1.png");
-	nodeTypes.push_back("Snow2.png");
-
-	int nodeTypeIndex = 0;
 
 	while (realwindow.isOpen()) {
 		sf::Event event;
@@ -147,38 +143,18 @@ int main(int argc, char **argv) {
 		window.draw(uispr);
 		starSys->process();
 		fpsSys->process();
+		
+		levelEditorSys->process();
+		if( levelEditorSys->queryTerrainAlterations() == true ) {
+			firstFrame = true;
+			terrainRenderSys->initialize();
+		}
 
 		window.display();
 
 		pixelrenderer.setTexture( window.getTexture() );
 		realwindow.draw(pixelrenderer);
 		realwindow.display();
-
-
-		if(sf::Mouse::isButtonPressed(sf::Mouse::Left)) {
-			artemis::Entity & ent = em->create();
-			sf::Vector2i mpos = sf::Mouse::getPosition(realwindow);
-			mpos.x /=3; mpos.y /=3;
-			mpos.x -= window.getSize().x/2;
-			mpos.y -= window.getSize().y/2;
-			float sz = 500.0f;
-			float z = sqrt( sz*sz-mpos.x*mpos.x-mpos.y*mpos.y );
-			sf::Vector2f out = ReverseUVTransform( Vector3( mpos.x, mpos.y, z ), sz, cameraSys->worldtransform);
-			ent.addComponent(new UVPositionComponent(out.x, out.y));
-			ent.addComponent(new SpriteComponent(nodeTypes[nodeTypeIndex], 1.0f));
-			ent.addComponent( new TerrainNodeComponent( nodeTypes[nodeTypeIndex] ) );
-			ent.addComponent(new MinimapComponent());
-			ent.refresh();
-			while( sf::Mouse::isButtonPressed(sf::Mouse::Left) );
-			terrainRenderSys->initialize();
-			firstFrame = true;
-		}
-
-		if( sf::Mouse::isButtonPressed(sf::Mouse::Right) ) {
-			++nodeTypeIndex;
-			if( nodeTypeIndex == nodeTypes.size() ) nodeTypeIndex = 0;
-			while( sf::Mouse::isButtonPressed(sf::Mouse::Right) );
-		}
 
 	}
 
