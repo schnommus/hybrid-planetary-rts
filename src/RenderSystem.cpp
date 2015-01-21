@@ -3,28 +3,29 @@
 #include "CameraSystem.h"
 
 #include <../gamemath/vector3.h>
+#include <cmath>
 
 #define ENGINE_DEBUG
 
-inline Vector3 DoUVTransform (float u, float v, float sz, Matrix4x3 & world)
+Vector3 DoUVTransform (float u, float v, float sz, Matrix4x3 & world)
 {
-	float x = cos(3.14159*u) * sin(3.14159*-2*v) * sz;
-	float y = sin(3.14159*u) * sin(3.14159*-2*v) * sz;
-	float z = cos(3.14159*-2*v) * sz;
+	float x = cos(M_PI*u) * sin(M_PI*-2.0f*v) * sz;
+	float y = sin(M_PI*u) * sin(M_PI*-2.0f*v) * sz;
+	float z = cos(M_PI*-2.0f*v) * sz;
 
 	return Vector3(x, y, z) * world;
 }
 
-inline sf::Vector2f ReverseUVTransform (Vector3 in, float sz, Matrix4x3 & world) {
+sf::Vector2f ReverseUVTransform (Vector3 in, float sz, Matrix4x3 & world) {
 	in = in * inverse(world);
 	sf::Vector2f out;
 	
-	float dx = in.x/sz;
-	float dy = -in.y/sz;
-	float dz = in.z/sz;
-	float xydist = sqrt( dx*dx + dy*dy );
-	out.x = (2.0f*atan( (xydist + dx)/dy ))/3.14159f;
-	out.y = atan( (1.0f-dz)/xydist )/3.14159f;
+	double dx = in.x/sz;
+	double dy = -in.y/sz;
+	double dz = in.z/sz;
+	double xydist = sqrt( dx*dx + dy*dy );
+	out.x = (2.0*atan( (xydist + dx)/dy ))/M_PI;
+	out.y = atan( (1.0-dz)/xydist )/M_PI;
 
 	return out;
 }
