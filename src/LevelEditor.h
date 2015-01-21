@@ -18,7 +18,7 @@ protected:
 	virtual void doProcessing();
 
 	void populateTypes();
-	void addType(std::string type);
+	void addType(std::string type, bool isNode = false);
 private:
 	sf::RenderTarget &window;	
 	sf::RenderWindow &realWindow;
@@ -29,4 +29,9 @@ private:
 	std::vector<std::string> types;
 	int typeIndex;
 	bool terrainAltered;
+	std::vector<sf::Texture> textures;
+	std::vector<bool> nodePredicates;
+	sf::Sprite currentSprite;
+	sf::Text topInstructions;
+	sf::Font debugfont;
 };
