@@ -23,7 +23,7 @@ bool LevelEditorSystem::queryTerrainAlterations() {
 	return false;
 }
 
-void LevelEditorSystem::doProcessing() {
+void LevelEditorSystem::entitySelector() {
 	// Draw the entity selector
 	for( int k = 0,j = 0,i = 0; i != textures.size(); ++i, ++k ) {
 		if( i % 5 == 0 ) ++j, k=0;
@@ -35,7 +35,22 @@ void LevelEditorSystem::doProcessing() {
 	}
 	topInstructions.setPosition( 50, 13 );
 	window.draw( topInstructions );
+	
+	// Use keys to change selected
+	if( sf::Keyboard::isKeyPressed(sf::Keyboard::M) ) {
+		++typeIndex;
+		if( typeIndex == types.size() ) typeIndex = 0;
+		while( sf::Keyboard::isKeyPressed(sf::Keyboard::M) );
+	}
 
+	if( sf::Keyboard::isKeyPressed(sf::Keyboard::N) ) {
+		--typeIndex;
+		if( typeIndex == -1 ) typeIndex = types.size()-1;
+		while( sf::Keyboard::isKeyPressed(sf::Keyboard::N) );
+	}
+}
+
+void LevelEditorSystem::placeEntities() {
 	if( sf::Mouse::isButtonPressed( sf::Mouse::Left ) ) {
 		artemis::Entity &ent = world->createEntity();
 		sf::Vector2i mpos = sf::Mouse::getPosition(realWindow);
@@ -56,10 +71,10 @@ void LevelEditorSystem::doProcessing() {
 		while( sf::Mouse::isButtonPressed( sf::Mouse::Left ) );
 		
 		terrainAltered = true;
-		//TODO: Refactor whole firstframe business
-		//Remove initialization counters etc
 	}
+}
 
+void LevelEditorSystem::removeEntities() {
 	if( sf::Mouse::isButtonPressed( sf::Mouse::Right ) ) {
 		sf::Vector2i mpos = sf::Mouse::getPosition(realWindow);
 		mpos.x /= 3; // In reality screen is 3x bigger than 'pixelspace'
@@ -83,18 +98,14 @@ void LevelEditorSystem::doProcessing() {
 
 		terrainAltered = true;
 	}
+}
 
-	if( sf::Keyboard::isKeyPressed(sf::Keyboard::M) ) {
-		++typeIndex;
-		if( typeIndex == types.size() ) typeIndex = 0;
-		while( sf::Keyboard::isKeyPressed(sf::Keyboard::M) );
-	}
+void LevelEditorSystem::doProcessing() {
+	entitySelector();
 
-	if( sf::Keyboard::isKeyPressed(sf::Keyboard::N) ) {
-		--typeIndex;
-		if( typeIndex == -1 ) typeIndex = types.size()-1;
-		while( sf::Keyboard::isKeyPressed(sf::Keyboard::N) );
-	}
+	placeEntities();
+
+	removeEntities();
 }
 
 

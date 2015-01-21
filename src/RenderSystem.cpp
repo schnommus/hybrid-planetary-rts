@@ -20,12 +20,12 @@ sf::Vector2f ReverseUVTransform (Vector3 in, float sz, Matrix4x3 & world) {
 	in = in * inverse(world);
 	sf::Vector2f out;
 	
-	double dx = in.x/sz;
-	double dy = -in.y/sz;
-	double dz = in.z/sz;
-	double xydist = sqrt( dx*dx + dy*dy );
-	out.x = (2.0*atan( (xydist + dx)/dy ))/M_PI;
-	out.y = atan( (1.0-dz)/xydist )/M_PI;
+	float dx = in.x/sz;
+	float dy = -in.y/sz;
+	float dz = in.z/sz;
+	float xydist = sqrt( dx*dx + dy*dy );
+	out.x = (2.0f*atan( (xydist + dx)/dy ))/M_PI;
+	out.y = atan( (1.0f-dz)/xydist )/M_PI;
 
 	return out;
 }
