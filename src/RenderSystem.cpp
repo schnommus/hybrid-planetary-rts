@@ -4,6 +4,8 @@
 
 #include <../gamemath/vector3.h>
 
+#define ENGINE_DEBUG
+
 inline Vector3 DoUVTransform (float u, float v, float sz, Matrix4x3 & world)
 {
 	float x = cos(3.14159*u) * sin(3.14159*-2*v) * sz;
@@ -185,14 +187,17 @@ void UVSphericalRenderSystem::processEntity (artemis::Entity & e) {
 			if( e.getComponent<TerrainNodeComponent>() != nullptr ) {
 				// (Cleared at the beginning of every frame in processentities)
 				flatSystem.addNodeID(e.getId());
+				#ifdef ENGINE_DEBUG
 				s.setColor(sf::Color(255, 255, 0, 255));
 				s.setRotation(45);
 				window.draw( s );
+				#endif
 			} else {
 				window.draw( s );
 			}
 
 			positionMapper.get(e)->on_screen = true;
+
 		}
 	} else {
 		positionMapper.get(e)->on_screen = false;
