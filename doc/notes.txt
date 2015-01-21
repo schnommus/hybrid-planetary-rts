@@ -1,6 +1,33 @@
--Add LevelEditing ProcessingSystem class; and put all level stuff in there.
--Show string of currently placing type
--Just pass everything relevent to the leveleditor which will hack it's way into other systems (if necessary)
--It should be possible to render terrain nodes within the leveleditor class without interfering with the RenderSystem
--Gotta delete nodes that are nearby within a threshold.
--Also just adding a delete function in the first place would be useful
+-Add LevelEditing ProcessingSystem class; and put all level stuff in there. *DONE*
+-Show string of currently placing type *DONE* (Images = better)
+-Just pass everything relevent to the leveleditor which will hack it's way into other systems (if necessary) *DONE*
+-It should be possible to render terrain nodes within the leveleditor class without interfering with the RenderSystem *DONE* (Compiler flag)
+-Gotta delete nodes that are nearby within a threshold. *DONE*
+-Also just adding a delete function in the first place would be useful. *DONE*
+
+-Move type descriptors in the level system into a to get rid of ugly array indexing -> probably should implement fully-fledged type system if this is gonna happen
+-Move drawing of selected types into a function because it smells *DONE*
+-Fix the ReverseUVTransform function. Probably some float/mathematical anomaly; but only on one pole of the planetoid, it's calculations stuff up in about a 20 pixel radius.
+
+TYPE SYSTEM
+-Have a directory full of entity XML files. (Or perhaps JSON)
+-Auto-scan the directory to populate type database (esp. for level editor!)
+-XML illustrates all the components; and component parameters.
+-xml is used to instantiate the entity; creating it from the description.
+
+BEHAVIOUR
+- Add a 'patrol' component; with variable parameters that a system will use to enact on them.
+
+INITIAL SIMPLICITY
+- Player is a *single* 'drone', with movement of the drone detached from the global camera.
+- Selection system for building stuff (Move up to a scaffold to enable construction => mechanic?)
+- Implement fading of terrain on change OR craploads of intermediate terrain types (probably better).
+i.e:
+Low T, Low P; Desolate moon.
+High T, Low P; Mercury or somewhat molten
+High T, High P; Venus-like
+Low T, High P; Gassy; either giant or methane lakes etc
+
+
+
+

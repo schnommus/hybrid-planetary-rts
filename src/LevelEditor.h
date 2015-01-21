@@ -16,7 +16,10 @@ public:
 protected:
 	virtual void initialize();
 	virtual void doProcessing();
-
+	
+	void placeEntities();
+	void removeEntities();
+	void entitySelector();
 	void populateTypes();
 	void addType(std::string type, bool isNode = false);
 private:
