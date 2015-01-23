@@ -41,7 +41,7 @@ BackgroundTerrainRenderSystem::BackgroundTerrainRenderSystem (sf::RenderTarget &
 	: window (rwindow), cameraSystem (cameraSystemv) {
 	addComponentType<FlatPositionComponent>();
 	addComponentType<SpriteComponent>();
-	addComponentType<BackgroundTerrainComponent>();
+	addComponentType<BackgroundTerrainTag>();
 }
 
 void BackgroundTerrainRenderSystem::initialize () {
@@ -188,7 +188,7 @@ void UVSphericalRenderSystem::processEntity (artemis::Entity & e) {
 		if( s.getPosition().x > -threshold && s.getPosition().y > -threshold && s.getPosition().x < window.getSize().x+threshold && s.getPosition().y < window.getSize().y +threshold) {
 
 			// Terrain nodes are invisible on this renderer
-			if( e.getComponent<TerrainNodeComponent>() != nullptr ) {
+			if( e.getComponent<TerrainNodeTag>() != nullptr ) {
 				// (Cleared at the beginning of every frame in processentities)
 				flatSystem.addNodeID(e.getId());
 				#ifdef ENGINE_DEBUG

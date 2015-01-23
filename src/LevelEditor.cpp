@@ -1,18 +1,24 @@
 #include "LevelEditor.h"
+
+#include "EntityFactory.h"
 #include <../gamemath/vector3.h>
 
-LevelEditorSystem::LevelEditorSystem( sf::RenderTarget &windowv, sf::RenderWindow &realWindowv, CameraSystem *cameraSysv, BackgroundTerrainRenderSystem *terrainRenderSysv, UVSphericalRenderSystem *uvRenderSysv )
-	: window( windowv ), realWindow(realWindowv), cameraSys(cameraSysv), terrainRenderSys(terrainRenderSysv), uvRenderSys(uvRenderSysv) { }
+LevelEditorSystem::LevelEditorSystem( sf::RenderTarget &windowv, sf::RenderWindow &realWindowv, CameraSystem *cameraSysv, BackgroundTerrainRenderSystem *terrainRenderSysv, UVSphericalRenderSystem *uvRenderSysv, EntityFactory *entFactoryv )
+	: window( windowv ), realWindow(realWindowv), cameraSys(cameraSysv), terrainRenderSys(terrainRenderSysv), uvRenderSys(uvRenderSysv), entFactory(entFactoryv) { }
 
 void LevelEditorSystem::initialize() {
-	populateTypes();
+	for( int i = 0; i != entFactory->GetAllTypes().size(); ++i ) {
+		artemis::Entity &ent = *entFactory->Create(entFactory->GetAllTypes()[i]);
+		sprites.push_back( FetchComponent<SpriteComponent>(ent).sprite );
+		//ent.remove(); //TODO: after resource fetcher is built in; textures pointers need not be invalidated
+	}
+
 	typeIndex = 0;
 	terrainAltered = false;
 	debugfont.loadFromFile("..//media//RiskofRainFont.ttf");
 	topInstructions.setFont(debugfont);
 	topInstructions.setCharacterSize(7);
 	topInstructions.setString("Place: LMB. Cycle: N/M. Delete: RMB. Selector: ");
-	//TODO: Scroll to cycle; RMB deletes.
 }
 
 bool LevelEditorSystem::queryTerrainAlterations() {
@@ -25,13 +31,13 @@ bool LevelEditorSystem::queryTerrainAlterations() {
 
 void LevelEditorSystem::entitySelector() {
 	// Draw the entity selector
-	for( int k = 0,j = 0,i = 0; i != textures.size(); ++i, ++k ) {
+	for( int k = 0,j = 0,i = 0; i != entFactory->GetAllTypes().size(); ++i, ++k ) {
 		if( i % 5 == 0 ) ++j, k=0;
-		currentSprite.setPosition(290+k*18, 10+18*(j-1));
-		currentSprite.setTexture( textures[i] );
-		if( i == typeIndex ) currentSprite.setScale(1.3, 1.3);
-		else currentSprite.setScale(1, 1);
-		window.draw( currentSprite );
+		sf::Sprite &sprite = sprites[i];
+		sprite.setPosition(290+k*18, 10+18*(j-1));
+		if( i == typeIndex ) sprite.setScale(1.3, 1.3);
+		else sprite.setScale(1, 1);
+		window.draw( sprite );
 	}
 	topInstructions.setPosition( 50, 13 );
 	window.draw( topInstructions );
@@ -39,20 +45,19 @@ void LevelEditorSystem::entitySelector() {
 	// Use keys to change selected
 	if( sf::Keyboard::isKeyPressed(sf::Keyboard::M) ) {
 		++typeIndex;
-		if( typeIndex == types.size() ) typeIndex = 0;
+		if( typeIndex ==entFactory->GetAllTypes().size() ) typeIndex = 0;
 		while( sf::Keyboard::isKeyPressed(sf::Keyboard::M) );
 	}
 
 	if( sf::Keyboard::isKeyPressed(sf::Keyboard::N) ) {
 		--typeIndex;
-		if( typeIndex == -1 ) typeIndex = types.size()-1;
+		if( typeIndex == -1 ) typeIndex = entFactory->GetAllTypes().size()-1;
 		while( sf::Keyboard::isKeyPressed(sf::Keyboard::N) );
 	}
 }
 
 void LevelEditorSystem::placeEntities() {
 	if( sf::Mouse::isButtonPressed( sf::Mouse::Left ) ) {
-		artemis::Entity &ent = world->createEntity();
 		sf::Vector2i mpos = sf::Mouse::getPosition(realWindow);
 		mpos.x /= 3; // In reality screen is 3x bigger than 'pixelspace'
 		mpos.y /= 3;
@@ -61,13 +66,9 @@ void LevelEditorSystem::placeEntities() {
 		float sz = 500.0f;
 		float z = sqrt( sz*sz-mpos.x*mpos.x-mpos.y*mpos.y );
 		sf::Vector2f out = ReverseUVTransform( Vector3( mpos.x, mpos.y, z ), sz, cameraSys->worldtransform);
-		ent.addComponent( new UVPositionComponent( out.x, out.y ));
-		ent.addComponent( new SpriteComponent( types[typeIndex] ) );
-		if( nodePredicates[typeIndex] )
-			ent.addComponent( new TerrainNodeComponent( types[typeIndex] ) );
-		ent.addComponent( new MinimapComponent() );
-		ent.refresh();
-
+		artemis::Entity & ent = *entFactory->Create(entFactory->GetAllTypes()[typeIndex]);
+		FetchComponent<UVPositionComponent>(ent).u = out.x;
+		FetchComponent<UVPositionComponent>(ent).v = out.y;
 		while( sf::Mouse::isButtonPressed( sf::Mouse::Left ) );
 		
 		terrainAltered = true;
@@ -106,24 +107,4 @@ void LevelEditorSystem::doProcessing() {
 	placeEntities();
 
 	removeEntities();
-}
-
-
-void LevelEditorSystem::addType( std::string type, bool isNode ) {
-	types.push_back(type);
-	nodePredicates.push_back(isNode);
-	textures.push_back( sf::Texture() );
-	textures[textures.size()-1].loadFromFile( std::string("../media/") + type );
-}
-
-void LevelEditorSystem::populateTypes() {
-	addType("Desert1.png", true);
-	addType("Desert2.png", true);
-	addType("Desert3.png", true);
-	addType("Snow1.png", true);
-	addType("Snow2.png", true);
-
-	addType("Plant1.png");
-	addType("Plant2.png");
-	addType("Rock1.png");
 }

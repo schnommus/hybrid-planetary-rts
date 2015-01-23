@@ -6,7 +6,7 @@
 
 StarSystem::StarSystem (sf::RenderTarget & rwindow, CameraSystem & cameraSystemv)
 	: window (rwindow), cameraSystem (cameraSystemv) {
-	addComponentType<StarComponent>();
+	addComponentType<StarTag>();
 	addComponentType<FlatPositionComponent>();
 }
 
@@ -17,7 +17,7 @@ void StarSystem::initialize () {
 	for(int i = 0; i != 50; ++i ) {
 		artemis::Entity &e = world->createEntity();
 		e.addComponent(new FlatPositionComponent(window.getSize().x-(rand()%220)/4-36/4, window.getSize().y-(rand()%220)/4-36/4));
-		e.addComponent(new StarComponent() );
+		e.addComponent(new StarTag() );
 		e.refresh();
 	}
 }
@@ -60,7 +60,7 @@ MinimapSphericalRenderSystem::MinimapSphericalRenderSystem (sf::RenderTarget & r
 	: window (rwindow), cameraSystem (cameraSystemv) {
 	addComponentType<UVPositionComponent>();
 	addComponentType<SpriteComponent>();
-	addComponentType<MinimapComponent>();
+	addComponentType<MinimapTag>();
 
 	sz = 25;
 }
@@ -100,7 +100,7 @@ void MinimapSphericalRenderSystem::processEntity (artemis::Entity & e) {
 	s.setScale(fact*defaultScale.x, fact*defaultScale.y);
 
 	// Terrain pieces need to appear bit bigger than normal things
-	if( e.getComponent<TerrainNodeComponent>() != nullptr ) {
+	if( e.getComponent<TerrainNodeTag>() != nullptr ) {
 		s.scale(1.5f, 1.5f);
 	} else {
 		s.scale(0.3f, 0.3f);

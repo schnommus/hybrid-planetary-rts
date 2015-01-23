@@ -1,3 +1,0 @@
-<entity type-name='the_derp_entity'>
-	<sprite_component file_name='DroneRight.png' animation_frames='3' scale='1'/>
-</entity>
