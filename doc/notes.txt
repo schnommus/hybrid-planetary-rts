@@ -5,24 +5,39 @@
 -Gotta delete nodes that are nearby within a threshold. *DONE*
 -Also just adding a delete function in the first place would be useful. *DONE*
 
--Move type descriptors in the level system into a to get rid of ugly array indexing -> probably should implement fully-fledged type system if this is gonna happen
+-Move type descriptors in the level system into a class to get rid of ugly array indexing -> probably should implement fully-fledged type system if this is gonna happen
 -Move drawing of selected types into a function because it smells *DONE*
 -Fix the ReverseUVTransform function. Probably some float/mathematical anomaly; but only on one pole of the planetoid, it's calculations stuff up in about a 20 pixel radius.
 -Move star system into minimap code *DONE*
 -Use VBOs for:
 	-Star system *DONE*
 	-Tile drawing (Will involve concatenating tileset & storing tiles in a grid of pointers to tile properties? Flyweight.)
+-For tiles:
+	-Change names of images to a number
+	-Write program that converts numbered terrain pieces into terrain spritesheet
+	-Create a class that represents terrain pieces [part of the type system] (Just use existing TerrainNode component?!)
+	-^^ is used for nodes
+	-BackGroundterrain keeps a pointer to the nearest node's [typesystem terrain class]
+	-Used for sfx (i.e snow; no snow; tracks etc, difficult to move)
+	-Backgroundterrain will instead use flyweight pattern; which is 2D array of pointers to parent node [or however typesystem goes]
+	-Rest of game can query background system; and pull out a terrain type pointer whenever need arises.
 
 TYPE SYSTEM
 -Have a directory full of entity XML files. (Or perhaps JSON)
--Auto-scan the directory to populate type database (esp. for level editor!)
+-Auto-scan the directory to populate type database (esp. for level editor!) (filename INSIGNIFICANT. but I.e <type-name: tree> )
 -XML illustrates all the components; and component parameters.
 -xml is used to instantiate the entity; creating it from the description.
+
+-Autoscan directory for all xml filenames
+-Build map of <type-name: tree> 'tree' to a list of strings (component names) -> [arguments](int/string/float component arguments)
+-Type map is queried to create types of entity.
+	-Entity factory exists that creates an entity from a list of component definitions -> see below
+	-Component factory exists that creates a component from a component string and list of arguments
 
 BEHAVIOUR
 - Add a 'patrol' component; with variable parameters that a system will use to enact on them.
 
-INITIAL SIMPLICITY
+GAMEPLAY STUFF
 - Player is a *single* 'drone', with movement of the drone detached from the global camera.
 - Selection system for building stuff (Move up to a scaffold to enable construction => mechanic?)
 - Implement fading of terrain on change OR craploads of intermediate terrain types (probably better).
