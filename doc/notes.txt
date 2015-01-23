@@ -1,3 +1,24 @@
+TOP:
+- file-mapped resource fetcher system
+- xml type system
+
+if entFactory creates
+class AttributeList { map<string, string> atts; String(key); Int(key); float()... }
+
+Components could implement
+static SpriteComponent *SpriteComponent::FromAttributes( AttributeList att ) {
+	return new SpriteComponent( att.String("file_name"), att.Int("animation_frames"), ... );
+}
+
+So EntFactory builds on init()
+map< typenames::string, vector<ComponentDescriptor> >
+
+(ComponentDescriptor.type; ComponentDescriptor.attributes)
+
+And then on a request to construct, does physical component creation returning entity pointer.
+
+Set vblank_mode=0 env. variable for fps analysis in linux
+
 -Add LevelEditing ProcessingSystem class; and put all level stuff in there. *DONE*
 -Show string of currently placing type *DONE* (Images = better)
 -Just pass everything relevent to the leveleditor which will hack it's way into other systems (if necessary) *DONE*
@@ -5,6 +26,7 @@
 -Gotta delete nodes that are nearby within a threshold. *DONE*
 -Also just adding a delete function in the first place would be useful. *DONE*
 
+-File-mapped resource fetcher system; to keep media directories isolated.
 -Move type descriptors in the level system into a class to get rid of ugly array indexing -> probably should implement fully-fledged type system if this is gonna happen
 -Move drawing of selected types into a function because it smells *DONE*
 -Fix the ReverseUVTransform function. Probably some float/mathematical anomaly; but only on one pole of the planetoid, it's calculations stuff up in about a 20 pixel radius.
