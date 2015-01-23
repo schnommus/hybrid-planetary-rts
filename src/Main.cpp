@@ -5,6 +5,7 @@
 #include "ProcessingSystem.h"
 #include "RenderSystem.h"
 #include "LevelEditor.h"
+#include "EntityFactory.h"
 
 #include <../gamemath/vector3.h>
 
@@ -69,6 +70,9 @@ int main(int argc, char **argv) {
 
     LevelEditorSystem * levelEditorSys =
         (LevelEditorSystem*)sm->setSystem(new LevelEditorSystem(window, realwindow, cameraSys, terrainRenderSys, uvRenderSys));
+
+    EntityFactory *entFactory = 
+        (EntityFactory*)sm->setSystem( new EntityFactory(window) );
 
     sm->initializeAll();
 
