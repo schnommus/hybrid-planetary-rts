@@ -4,7 +4,6 @@
 #include <string>
 #include <SFML/Graphics.hpp>
 #include <Artemis/Artemis.h>
-//#include <TinyXML2/tinyxml2.h>
 
 #include "Components.h"
 #include "ProcessingSystem.h"

@@ -19,6 +19,9 @@
     <Filter Include="Source Files\GameMath">
       <UniqueIdentifier>{b05d36f7-3551-4210-a463-a680865bd0ab}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Source Files\TinyXML2">
+      <UniqueIdentifier>{1845ced3-25f3-489a-8826-e1602ae5909a}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\thirdparty\gamemath\EulerAngles.cpp">
@@ -52,6 +55,15 @@
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="..\src\Main.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\EntityFactory.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\thirdparty\tinyxml2.cpp">
+      <Filter>Source Files\TinyXML2</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\LevelEditor.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
@@ -96,6 +108,12 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="..\src\RenderSystem.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\EntityFactory.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\LevelEditor.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>
