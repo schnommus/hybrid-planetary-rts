@@ -1,0 +1,5 @@
+<entity type_name='airdispensor'>
+	<sprite_component file_name='AirDispensor.png' animation_frames='25'/>
+	<minimap_tag/>
+	<uv_position_component/>
+</entity>

@@ -22,20 +22,15 @@ bool AvoidPolarRestrict(float u, float v) {
 }
 
 // A restrict function will return true if the goal position is valid
-void PlaceRandom(artemis::EntityManager* em, int n, std::string type, bool (*restrict)(float , float) = NoRestrict, bool isNode = false, int frames = 1 ) {
+void PlaceRandom(EntityFactory* ef, int n, std::string type, bool (*restrict)(float , float) = NoRestrict ) {
     for(int i = 0; i != n; ++i) {
         float u = float(rand()%1000)/1000.0f;
         float v = float(rand()%1000)/1000.0f;
 
         if( (*restrict)(u, v) == true ) {
-            artemis::Entity & ent = em->create();
-            ent.addComponent(new UVPositionComponent(u, v));
-            ent.addComponent(new SpriteComponent(type, 1.0f, frames));
-            if( isNode ) {
-                ent.addComponent( new TerrainNodeComponent( type ) );
-            }
-            ent.addComponent(new MinimapComponent());
-            ent.refresh();
+            artemis::Entity & ent = *ef->Create(type);
+            FetchComponent<UVPositionComponent>(ent).u = u;
+			FetchComponent<UVPositionComponent>(ent).v = v;
         } else {
             --i; // Failed to place
         }
@@ -68,19 +63,21 @@ int main(int argc, char **argv) {
     DrawFPSSystem * fpsSys =
         (DrawFPSSystem*)sm->setSystem(new DrawFPSSystem(window));
 
-    LevelEditorSystem * levelEditorSys =
-        (LevelEditorSystem*)sm->setSystem(new LevelEditorSystem(window, realwindow, cameraSys, terrainRenderSys, uvRenderSys));
+	EntityFactory *entFactory = 
+		(EntityFactory*)sm->setSystem( new EntityFactory(window) );
 
-    EntityFactory *entFactory = 
-        (EntityFactory*)sm->setSystem( new EntityFactory(window) );
+    LevelEditorSystem * levelEditorSys =
+        (LevelEditorSystem*)sm->setSystem(new LevelEditorSystem(window, realwindow, cameraSys, terrainRenderSys, uvRenderSys, entFactory));
 
     sm->initializeAll();
 
-    PlaceRandom(em, 170, "Desert1.png", AvoidPolarRestrict, true);
-    PlaceRandom(em, 150, "Desert2.png", AvoidPolarRestrict, true);
-    PlaceRandom(em, 35, "Desert3.png", AvoidPolarRestrict, true);
+    PlaceRandom(entFactory, 130, "terrain_desert1", AvoidPolarRestrict);
+    PlaceRandom(entFactory, 130, "terrain_desert2", AvoidPolarRestrict);
+    PlaceRandom(entFactory, 55, "terrain_desert3", AvoidPolarRestrict);
 
-    PlaceRandom(em, 20, "Snow1.png", PolarRestrict, true);
+	PlaceRandom(entFactory, 50, "airdispensor", NoRestrict );
+
+    /*PlaceRandom(em, 20, "Snow1.png", PolarRestrict, true);
     PlaceRandom(em, 20, "Snow2.png", PolarRestrict, true);
 
     PlaceRandom(em, 40, "Rock1.png");
@@ -91,7 +88,7 @@ int main(int argc, char **argv) {
     PlaceRandom(em, 5, "DroneUp.png", NoRestrict, false, 3);
     PlaceRandom(em, 10, "Artefact1.png");
     PlaceRandom(em, 40, "Plant1.png", AvoidPolarRestrict);
-    PlaceRandom(em, 40, "Plant2.png", AvoidPolarRestrict);
+    PlaceRandom(em, 40, "Plant2.png", AvoidPolarRestrict);*/
 
     // Add all the background terrain entities
     for(int i = 0; i != (int)(ceil(window.getSize().x/16.0f)+2); ++i) {
@@ -99,7 +96,7 @@ int main(int argc, char **argv) {
             artemis::Entity & e = em->create();
             e.addComponent(new FlatPositionComponent(16*i-16, 16*j-16));
             e.addComponent(new SpriteComponent("Desert1.png", 1.005f));
-            e.addComponent(new BackgroundTerrainComponent());
+            e.addComponent(new BackgroundTerrainTag());
             e.refresh();
         }
     }

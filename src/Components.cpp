@@ -1,5 +1,14 @@
 #include "Components.h"
+#include "EntityFactory.h"
 
+#define register_component(s, t) if( desc.type == s ) return t::CreateFromAttributes( desc.attr )
+#define register_tag(s, t) if( desc.type == s ) return new t()
+artemis::Component *ComponentFromDescriptor( ComponentDescriptor & desc ) {
+	register_component("sprite_component", SpriteComponent);
+	register_tag("minimap_tag", MinimapTag);
+	register_tag("terrain_node_tag", TerrainNodeTag);
+	register_tag("uv_position_component", UVPositionComponent);
+}
 
 UVPositionComponent::UVPositionComponent (float uv, float vv) {
 	this->u = uv;
@@ -8,7 +17,6 @@ UVPositionComponent::UVPositionComponent (float uv, float vv) {
 	colour = sf::Color(255, 255, 255, 255);
 	on_screen = false;
 }
-
 
 FlatPositionComponent::FlatPositionComponent (float xv, float yv) {
 	this->x = xv;
@@ -38,11 +46,7 @@ void SpriteComponent::UpdateAnimation () {
 		sprite.setTextureRect( sf::IntRect(x, 0, sprite.getLocalBounds().width, sprite.getLocalBounds().height ) );
 	}
 }
-TerrainNodeComponent::TerrainNodeComponent (std::string typev)
-	: type (typev)
-{}
 
-
-MinimapComponent::MinimapComponent () {}
-BackgroundTerrainComponent::BackgroundTerrainComponent () {}
-StarComponent::StarComponent () {}
+artemis::Component *SpriteComponent::CreateFromAttributes( AttributeList &att ) {
+	return new SpriteComponent( att.String("file_name", "point.png"), att.Float("scale", 1.0f), att.Int("animation_frames", 1));
+}

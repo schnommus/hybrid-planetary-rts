@@ -3,6 +3,16 @@
 #include <Artemis/Artemis.h>
 #include <SFML/Graphics.hpp>
 
+class AttributeList;
+class ComponentDescriptor;
+
+struct Tag : public artemis::Component {};
+
+template <typename T>
+inline T &FetchComponent( artemis::Entity &e ) {
+	return *((T*)e.getComponent<T>());
+}
+
 class UVPositionComponent : public artemis::Component {
 public:
 	float u;
@@ -11,7 +21,8 @@ public:
 	float screen_y;
 	bool on_screen;
 	sf::Color colour;
-	UVPositionComponent (float uv, float vv);
+	UVPositionComponent (float uv=0, float vv=0);
+	UVPositionComponent *From( artemis::Entity *e );
 };
 
 
@@ -30,31 +41,19 @@ public:
 	int nFrames;
 	SpriteComponent (std::string directory, float scale = 1.0f, int frames = 1);
 	void UpdateAnimation ();
+	static artemis::Component *CreateFromAttributes( AttributeList &att );
 private:
 	sf::Texture texture;
 };
 
 
-class TerrainNodeComponent : public artemis::Component {
-public:
-	std::string type;
-	TerrainNodeComponent (std::string typev);
-};
+class TerrainNodeTag : public Tag { };
+
+class MinimapTag : public Tag { };
+
+class BackgroundTerrainTag : public Tag { };
+
+class StarTag : public Tag { };
 
 
-class MinimapComponent : public artemis::Component {
-public:
-	MinimapComponent ();
-};
-
-
-class BackgroundTerrainComponent : public artemis::Component {
-public:
-	BackgroundTerrainComponent ();
-};
-
-
-class StarComponent : public artemis::Component {
-public:
-	StarComponent ();
-};
+artemis::Component *ComponentFromDescriptor( ComponentDescriptor & desc );

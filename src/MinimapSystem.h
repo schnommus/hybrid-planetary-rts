@@ -21,7 +21,7 @@ class MinimapSphericalRenderSystem : public artemis::EntityProcessingSystem {
 private:
 	artemis::ComponentMapper <UVPositionComponent> positionMapper;
 	artemis::ComponentMapper <SpriteComponent> spriteMapper;
-	artemis::ComponentMapper <MinimapComponent> minimapMapper;
+	artemis::ComponentMapper <MinimapTag> minimapMapper;
 	sf::RenderTarget & window;
 	CameraSystem & cameraSystem;
 	StarSystem * starSys;

@@ -1,4 +1,0 @@
-<entity type-name='treebie'>
-	<sprite_component file_name='Plant1.png' scale='1'/>
-	<ui_tooltip text='Avoid clicking this at all costs!' delay='5'/>
-</entity>

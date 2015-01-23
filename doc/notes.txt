@@ -1,6 +1,13 @@
 TOP:
 - file-mapped resource fetcher system
-- xml type system
+- xml type system *DONE*
+
+ENABLES:
+-File-mapped resource fetcher system
+-Dynamic level editor loading of entity types
+-Using VBOs for everything
+	-Draw ordering by append & sort!
+	-Stuff on same draw level is rendered top to bottom? Would be appropriate.
 
 if entFactory creates
 class AttributeList { map<string, string> atts; String(key); Int(key); float()... }
@@ -16,6 +23,13 @@ map< typenames::string, vector<ComponentDescriptor> >
 (ComponentDescriptor.type; ComponentDescriptor.attributes)
 
 And then on a request to construct, does physical component creation returning entity pointer.
+
+At the end of components.h->
+#define register_component(s, t) if( desc.name == s ) return t::FromAttributes( desc.attributes )
+Component *FromDescriptor( ComponentDescriptor & desc ) {
+	register_component("sprite-component", SpriteComponent);
+	...
+}
 
 Set vblank_mode=0 env. variable for fps analysis in linux
 
