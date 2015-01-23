@@ -8,12 +8,34 @@ StarSystem::StarSystem (sf::RenderTarget & rwindow, CameraSystem & cameraSystemv
 	: window (rwindow), cameraSystem (cameraSystemv) {
 	addComponentType<StarComponent>();
 	addComponentType<FlatPositionComponent>();
-	starTex.loadFromFile("../media/star.png");
-	starSprite.setTexture(starTex);
 }
 
 void StarSystem::initialize () {
 	positionMapper.init(*world);
+
+	// Create all the stars
+	for(int i = 0; i != 50; ++i ) {
+		artemis::Entity &e = world->createEntity();
+		e.addComponent(new FlatPositionComponent(window.getSize().x-(rand()%220)/4-36/4, window.getSize().y-(rand()%220)/4-36/4));
+		e.addComponent(new StarComponent() );
+		e.refresh();
+	}
+}
+
+void StarSystem::processEntities (artemis::ImmutableBag <artemis::Entity*> & bag) {
+	starPositions.clear();
+
+	// Must do this because we just overwrote the default behaviour
+	artemis::EntityProcessingSystem::processEntities(bag);
+	
+	
+	// Draw them all using a vertex buffer
+	std::vector< sf::Vertex > starPoints;
+	for( int i = 0; i != starPositions.size(); ++i ) {
+		starPoints.push_back(sf::Vertex( starPositions[i], sf::Color::White ) );
+	}
+
+	window.draw( &starPoints[0], starPoints.size(), sf::Points );
 }
 
 void StarSystem::processEntity (artemis::Entity & e) {
@@ -29,8 +51,7 @@ void StarSystem::processEntity (artemis::Entity & e) {
 	if( x < window.getSize().x-244/4 ) x = window.getSize().x-15/4;
 
 	if( pow(y-(window.getSize().y-32), 2) + pow(x-(window.getSize().x-32), 2) > 26*26 ) {
-		starSprite.setPosition(x,y);
-		window.draw(starSprite);
+		starPositions.push_back( sf::Vector2f(x, y) );
 	}
 }
 
@@ -49,13 +70,11 @@ void MinimapSphericalRenderSystem::initialize () {
 	spriteMapper.init(*world);
 	minimapMapper.init(*world);
 
-	// Create all the stars
-	for(int i = 0; i != 50; ++i ) {
-		artemis::Entity &e = world->createEntity();
-		e.addComponent(new FlatPositionComponent(window.getSize().x-(rand()%220)/4-36/4, window.getSize().y-(rand()%220)/4-36/4));
-		e.addComponent(new StarComponent() );
-		e.refresh();
-	}
+	starSys = (StarSystem*)world->getSystemManager()->setSystem(new StarSystem(window, cameraSystem));
+}
+
+void MinimapSphericalRenderSystem::drawStars() {
+	starSys->process();
 }
 
 void MinimapSphericalRenderSystem::processEntity (artemis::Entity & e) {

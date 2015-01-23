@@ -7,14 +7,14 @@
 
 class StarSystem : public artemis::EntityProcessingSystem {
 	artemis::ComponentMapper <FlatPositionComponent> positionMapper;
-	sf::Texture starTex;
-	sf::Sprite starSprite;
+	std::vector<sf::Vector2f> starPositions;
 	sf::RenderTarget & window;
 	CameraSystem & cameraSystem;
 public:
 	StarSystem (sf::RenderTarget & rwindow, CameraSystem & cameraSystemv);
 	virtual void initialize ();
 	virtual void processEntity (artemis::Entity & e);
+	virtual void processEntities (artemis::ImmutableBag <artemis::Entity*> & bag);
 };
 
 class MinimapSphericalRenderSystem : public artemis::EntityProcessingSystem {
@@ -24,9 +24,11 @@ private:
 	artemis::ComponentMapper <MinimapComponent> minimapMapper;
 	sf::RenderTarget & window;
 	CameraSystem & cameraSystem;
+	StarSystem * starSys;
 	float sz;
 public:
 	MinimapSphericalRenderSystem (sf::RenderTarget & rwindow, CameraSystem & cameraSystemv);
+	void drawStars();
 	virtual void initialize ();
 	virtual void processEntity (artemis::Entity & e);
 };
