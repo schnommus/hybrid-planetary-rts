@@ -3,12 +3,14 @@
 #include "CameraSystem.h"
 
 #include <../gamemath/vector3.h>
+
 #include <cmath>
 
 #define ENGINE_DEBUG
 
 Vector3 DoUVTransform (float u, float v, float sz, Matrix4x3 & world)
 {
+	using namespace std;
 	float x = cos(M_PI*u) * sin(M_PI*-2.0f*v) * sz;
 	float y = sin(M_PI*u) * sin(M_PI*-2.0f*v) * sz;
 	float z = cos(M_PI*-2.0f*v) * sz;
@@ -17,6 +19,7 @@ Vector3 DoUVTransform (float u, float v, float sz, Matrix4x3 & world)
 }
 
 sf::Vector2f ReverseUVTransform (Vector3 in, float sz, Matrix4x3 & world) {
+	using namespace std;
 	in = in * inverse(world);
 	sf::Vector2f out;
 	

@@ -91,6 +91,8 @@
     <ClCompile Include="..\src\CameraSystem.cpp" />
     <ClCompile Include="..\src\Components.cpp" />
     <ClCompile Include="..\src\DebugSystems.cpp" />
+    <ClCompile Include="..\src\EntityFactory.cpp" />
+    <ClCompile Include="..\src\LevelEditor.cpp" />
     <ClCompile Include="..\src\Main.cpp" />
     <ClCompile Include="..\src\MinimapSystem.cpp" />
     <ClCompile Include="..\src\RenderSystem.cpp" />
@@ -99,11 +101,14 @@
     <ClCompile Include="..\thirdparty\gamemath\Matrix4x3.cpp" />
     <ClCompile Include="..\thirdparty\gamemath\Quaternion.cpp" />
     <ClCompile Include="..\thirdparty\gamemath\RotationMatrix.cpp" />
+    <ClCompile Include="..\thirdparty\tinyxml2.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\src\CameraSystem.h" />
     <ClInclude Include="..\src\Components.h" />
     <ClInclude Include="..\src\DebugSystems.h" />
+    <ClInclude Include="..\src\EntityFactory.h" />
+    <ClInclude Include="..\src\LevelEditor.h" />
     <ClInclude Include="..\src\MinimapSystem.h" />
     <ClInclude Include="..\src\ProcessingSystem.h" />
     <ClInclude Include="..\src\RenderSystem.h" />
