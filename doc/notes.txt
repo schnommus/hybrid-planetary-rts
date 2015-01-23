@@ -8,6 +8,10 @@
 -Move type descriptors in the level system into a to get rid of ugly array indexing -> probably should implement fully-fledged type system if this is gonna happen
 -Move drawing of selected types into a function because it smells *DONE*
 -Fix the ReverseUVTransform function. Probably some float/mathematical anomaly; but only on one pole of the planetoid, it's calculations stuff up in about a 20 pixel radius.
+-Move star system into minimap code *DONE*
+-Use VBOs for:
+	-Star system *DONE*
+	-Tile drawing (Will involve concatenating tileset & storing tiles in a grid of pointers to tile properties? Flyweight.)
 
 TYPE SYSTEM
 -Have a directory full of entity XML files. (Or perhaps JSON)
@@ -27,6 +31,9 @@ Low T, Low P; Desolate moon.
 High T, Low P; Mercury or somewhat molten
 High T, High P; Venus-like
 Low T, High P; Gassy; either giant or methane lakes etc
+
+-Perhaps scatter the archetypes of amino generators (randomly) across the map at the beginning; hidden in artefacts (archives)
+-Amino generators will only function when planetoid has an appropriate habitat for the relevant units that are being created.
 
 
 

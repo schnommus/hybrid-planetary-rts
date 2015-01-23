@@ -180,7 +180,7 @@ void UVSphericalRenderSystem::processEntity (artemis::Entity & e) {
 	positionMapper.get(e)->colour = s.getColor();
 
 	if( rotated.z > 0.0f ) {
-		int threshold = 100;
+		int threshold = 80;
 		// If on the screen
 		if( s.getPosition().x > -threshold && s.getPosition().y > -threshold && s.getPosition().x < window.getSize().x+threshold && s.getPosition().y < window.getSize().y +threshold) {
 
