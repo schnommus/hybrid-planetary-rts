@@ -77,19 +77,13 @@ int main(int argc, char **argv) {
     PlaceRandom(entFactory, 55, "terrain_desert3", AvoidPolarRestrict);
 
 	PlaceRandom(entFactory, 50, "airdispensor", NoRestrict );
+	PlaceRandom(entFactory, 5, "artefact", NoRestrict );
+	PlaceRandom(entFactory, 40, "plant1", AvoidPolarRestrict );
+	PlaceRandom(entFactory, 40, "plant2", AvoidPolarRestrict );
+	PlaceRandom(entFactory, 40, "rock1", PolarRestrict );
 
-    /*PlaceRandom(em, 20, "Snow1.png", PolarRestrict, true);
-    PlaceRandom(em, 20, "Snow2.png", PolarRestrict, true);
-
-    PlaceRandom(em, 40, "Rock1.png");
-    PlaceRandom(em, 50, "AirDispensor.png", NoRestrict, false, 25);
-    PlaceRandom(em, 5, "DroneDown.png", NoRestrict, false, 3);
-    PlaceRandom(em, 5, "DroneLeft.png", NoRestrict, false, 3);
-    PlaceRandom(em, 5, "DroneRight.png", NoRestrict, false, 3);
-    PlaceRandom(em, 5, "DroneUp.png", NoRestrict, false, 3);
-    PlaceRandom(em, 10, "Artefact1.png");
-    PlaceRandom(em, 40, "Plant1.png", AvoidPolarRestrict);
-    PlaceRandom(em, 40, "Plant2.png", AvoidPolarRestrict);*/
+    PlaceRandom(entFactory, 20, "terrain_snow1", PolarRestrict);
+    PlaceRandom(entFactory, 20, "terrain_snow2", PolarRestrict);
 
     // Add all the background terrain entities
     for(int i = 0; i != (int)(ceil(window.getSize().x/16.0f)+2); ++i) {
