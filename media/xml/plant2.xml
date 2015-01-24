@@ -1,0 +1,5 @@
+<entity type_name='plant2'>
+	<sprite_component file_name='Plant2.png' animation_frames='1'/>
+	<minimap_tag/>
+	<uv_position_component/>
+</entity>

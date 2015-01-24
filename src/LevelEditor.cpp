@@ -2,6 +2,7 @@
 
 #include "EntityFactory.h"
 #include <../gamemath/vector3.h>
+#include "ResourceManager.h"
 
 LevelEditorSystem::LevelEditorSystem( sf::RenderTarget &windowv, sf::RenderWindow &realWindowv, CameraSystem *cameraSysv, BackgroundTerrainRenderSystem *terrainRenderSysv, UVSphericalRenderSystem *uvRenderSysv, EntityFactory *entFactoryv )
 	: window( windowv ), realWindow(realWindowv), cameraSys(cameraSysv), terrainRenderSys(terrainRenderSysv), uvRenderSys(uvRenderSysv), entFactory(entFactoryv) { }
@@ -10,13 +11,12 @@ void LevelEditorSystem::initialize() {
 	for( int i = 0; i != entFactory->GetAllTypes().size(); ++i ) {
 		artemis::Entity &ent = *entFactory->Create(entFactory->GetAllTypes()[i]);
 		sprites.push_back( FetchComponent<SpriteComponent>(ent).sprite );
-		//ent.remove(); //TODO: after resource fetcher is built in; textures pointers need not be invalidated
+		ent.remove();
 	}
 
 	typeIndex = 0;
 	terrainAltered = false;
-	debugfont.loadFromFile("..//media//RiskofRainFont.ttf");
-	topInstructions.setFont(debugfont);
+	topInstructions.setFont( ResourceManager::Inst().GetFont("RiskofRainFont.ttf") );
 	topInstructions.setCharacterSize(7);
 	topInstructions.setString("Place: LMB. Cycle: N/M. Delete: RMB. Selector: ");
 }
@@ -35,8 +35,9 @@ void LevelEditorSystem::entitySelector() {
 		if( i % 5 == 0 ) ++j, k=0;
 		sf::Sprite &sprite = sprites[i];
 		sprite.setPosition(290+k*18, 10+18*(j-1));
-		if( i == typeIndex ) sprite.setScale(1.3, 1.3);
-		else sprite.setScale(1, 1);
+		float scale = 16.0f / (float)sprite.getLocalBounds().width; //Normalize to 16x16
+		if( i == typeIndex ) sprite.setScale(1.3*scale, 1.3*scale);
+		else sprite.setScale(scale, scale);
 		window.draw( sprite );
 	}
 	topInstructions.setPosition( 50, 13 );

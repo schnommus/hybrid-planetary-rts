@@ -35,6 +35,5 @@ protected:
 private:
 	std::vector< std::string > allTypes;
 	std::map< std::string, std::vector< ComponentDescriptor > > entityTypeMap;
-	std::vector<std::string> AllFilesOfExtension( std::string typeToFind );
 	sf::RenderTarget &window;
 };

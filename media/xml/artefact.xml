@@ -1,0 +1,5 @@
+<entity type_name='artefact'>
+	<sprite_component file_name='Artefact1.png' animation_frames='1'/>
+	<minimap_tag/>
+	<uv_position_component/>
+</entity>
