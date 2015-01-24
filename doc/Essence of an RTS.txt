@@ -1,0 +1,22 @@
+Pretty much every unit:
+	-Selection (inc. loop selection etc)
+	-Display of commands at bottom of UI when selected
+		(CommandsComponent) <command_component build='build_grunt,build_engineer' action='self_destruct'>
+		where build_grunt, build_engineer are xml entity descriptors for UI buttons with e.g
+			<button_component/>
+			<queue_spawn_component cost='100' type='grunt> //Grunt is another xml file (actual entity)
+		OR EVEN
+			The BUILDING has multiple
+				<command_button_component texture='Button.png' type='spawn' object='grunt' cost='100'>
+				where the component switches across the button type to establish behaviour on a clicktrigger from UISystem.
+	-Has health, perhaps other stats
+
+Static unit:
+	-Besides commands(incl. building other units), selection, health etc: 
+	-Rally point
+
+Dynamic Unit:
+	-Can move; has pathfinding etc. (at first perhaps circular avoidance?)
+	-Local FSM; I.e if movement hasn't finished, run idle FSM which could be attack nearest within LOS
+	-Can attack; with an attack range. Melee could simply be treated as a really short-range attack
+	-Perhaps if a unit is forced to melee however; it will? (too close a range)

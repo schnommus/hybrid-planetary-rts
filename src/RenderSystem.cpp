@@ -6,7 +6,7 @@
 
 #include <cmath>
 
-#define ENGINE_DEBUG
+#define SHOW_NODES
 
 Vector3 DoUVTransform (float u, float v, float sz, Matrix4x3 & world)
 {
@@ -191,7 +191,7 @@ void UVSphericalRenderSystem::processEntity (artemis::Entity & e) {
 			if( e.getComponent<TerrainNodeTag>() != nullptr ) {
 				// (Cleared at the beginning of every frame in processentities)
 				flatSystem.addNodeID(e.getId());
-				#ifdef ENGINE_DEBUG
+				#ifdef SHOW_NODES
 				s.setColor(sf::Color(255, 255, 0, 255));
 				s.setRotation(45);
 				window.draw( s );
