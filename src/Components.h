@@ -39,7 +39,7 @@ public:
 	sf::Sprite sprite;
 	sf::Clock frameClock;
 	int nFrames;
-	SpriteComponent (std::string directory, float scale = 1.0f, int frames = 1);
+	SpriteComponent (std::string name, float scale = 1.0f, int frames = 1);
 	void UpdateAnimation ();
 	static artemis::Component *CreateFromAttributes( AttributeList &att );
 private:

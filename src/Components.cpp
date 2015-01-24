@@ -1,5 +1,6 @@
 #include "Components.h"
 #include "EntityFactory.h"
+#include "ResourceManager.h"
 
 #define register_component(s, t) if( desc.type == s ) return t::CreateFromAttributes( desc.attr )
 #define register_tag(s, t) if( desc.type == s ) return new t()
@@ -24,10 +25,9 @@ FlatPositionComponent::FlatPositionComponent (float xv, float yv) {
 }
 
 
-SpriteComponent::SpriteComponent (std::string directory, float scale, int frames)
+SpriteComponent::SpriteComponent (std::string name, float scale, int frames)
 	: nFrames (frames) {
-	texture.loadFromFile("../media/" + directory);
-	sprite.setTexture(texture);
+	sprite.setTexture( ResourceManager::Inst().GetTexture(name) );
 	sprite.setTextureRect( sf::IntRect((rand()%nFrames)*sprite.getLocalBounds().width/frames, 0, sprite.getLocalBounds().width/frames, sprite.getLocalBounds().height ) );
 	sprite.setScale(scale, scale);
 	sprite.setOrigin( sprite.getLocalBounds().width/2, sprite.getLocalBounds().height/2 );

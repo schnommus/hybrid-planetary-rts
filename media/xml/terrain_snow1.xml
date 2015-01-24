@@ -1,0 +1,6 @@
+<entity type_name='terrain_snow1'>
+	<sprite_component file_name='Snow1.png'/>
+	<minimap_tag/>
+	<terrain_node_tag/>
+	<uv_position_component/>
+</entity>

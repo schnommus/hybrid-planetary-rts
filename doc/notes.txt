@@ -1,10 +1,10 @@
 TOP:
-- file-mapped resource fetcher system
+- file-mapped resource fetcher system *DONE*
 - xml type system *DONE*
 
 ENABLES:
--File-mapped resource fetcher system
--Dynamic level editor loading of entity types
+-File-mapped resource fetcher system *DONE*
+-Dynamic level editor loading of entity types *DONE*
 -Using VBOs for everything
 	-Draw ordering by append & sort!
 	-Stuff on same draw level is rendered top to bottom? Would be appropriate.
@@ -41,7 +41,7 @@ Set vblank_mode=0 env. variable for fps analysis in linux
 -Also just adding a delete function in the first place would be useful. *DONE*
 
 -File-mapped resource fetcher system; to keep media directories isolated.
--Move type descriptors in the level system into a class to get rid of ugly array indexing -> probably should implement fully-fledged type system if this is gonna happen
+-Move type descriptors in the level system into a class to get rid of ugly array indexing -> probably should implement fully-fledged type system if this is gonna happen *DONE*
 -Move drawing of selected types into a function because it smells *DONE*
 -Fix the ReverseUVTransform function. Probably some float/mathematical anomaly; but only on one pole of the planetoid, it's calculations stuff up in about a 20 pixel radius.
 -Move star system into minimap code *DONE*
@@ -59,10 +59,10 @@ Set vblank_mode=0 env. variable for fps analysis in linux
 	-Rest of game can query background system; and pull out a terrain type pointer whenever need arises.
 
 TYPE SYSTEM
--Have a directory full of entity XML files. (Or perhaps JSON)
--Auto-scan the directory to populate type database (esp. for level editor!) (filename INSIGNIFICANT. but I.e <type-name: tree> )
--XML illustrates all the components; and component parameters.
--xml is used to instantiate the entity; creating it from the description.
+-Have a directory full of entity XML files. (Or perhaps JSON) *DONE*
+-Auto-scan the directory to populate type database (esp. for level editor!) (filename INSIGNIFICANT. but I.e <type-name: tree> ) *DONE*
+-XML illustrates all the components; and component parameters. *DONE*
+-xml is used to instantiate the entity; creating it from the description. *DONE*
 
 -Autoscan directory for all xml filenames
 -Build map of <type-name: tree> 'tree' to a list of strings (component names) -> [arguments](int/string/float component arguments)

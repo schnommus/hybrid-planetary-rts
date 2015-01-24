@@ -96,6 +96,7 @@
     <ClCompile Include="..\src\Main.cpp" />
     <ClCompile Include="..\src\MinimapSystem.cpp" />
     <ClCompile Include="..\src\RenderSystem.cpp" />
+    <ClCompile Include="..\src\ResourceManager.cpp" />
     <ClCompile Include="..\thirdparty\gamemath\EulerAngles.cpp" />
     <ClCompile Include="..\thirdparty\gamemath\MathUtil.cpp" />
     <ClCompile Include="..\thirdparty\gamemath\Matrix4x3.cpp" />
@@ -112,6 +113,7 @@
     <ClInclude Include="..\src\MinimapSystem.h" />
     <ClInclude Include="..\src\ProcessingSystem.h" />
     <ClInclude Include="..\src\RenderSystem.h" />
+    <ClInclude Include="..\src\ResourceManager.h" />
     <ClInclude Include="..\thirdparty\gamemath\EulerAngles.h" />
     <ClInclude Include="..\thirdparty\gamemath\Font.h" />
     <ClInclude Include="..\thirdparty\gamemath\MathUtil.h" />

@@ -1,4 +1,5 @@
 #include "DebugSystems.h"
+#include "ResourceManager.h"
 
 #include <sstream>
 
@@ -13,7 +14,6 @@ void DrawFPSSystem::doProcessing () {
 }
 
 void DrawFPSSystem::initialize () {
-	debugfont.loadFromFile("..//media//RiskofRainFont.ttf");
-	fps_text.setFont( debugfont );
+	fps_text.setFont( ResourceManager::Inst().GetFont("RiskofRainFont.ttf") );
 	fps_text.setCharacterSize(8);
 }

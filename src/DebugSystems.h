@@ -12,6 +12,5 @@ protected:
 	virtual void initialize ();
 private:
 	sf::Text fps_text;
-	sf::Font debugfont;
 	sf::RenderTarget & window;
 };

@@ -6,6 +6,7 @@
 #include "RenderSystem.h"
 #include "LevelEditor.h"
 #include "EntityFactory.h"
+#include "ResourceManager.h"
 
 #include <../gamemath/vector3.h>
 
@@ -103,8 +104,7 @@ int main(int argc, char **argv) {
 
     sf::Clock clock;
 
-    sf::Texture uitex; uitex.loadFromFile("../media/uiOverlay.png");
-    sf::Sprite uispr(uitex);
+    sf::Sprite uispr( ResourceManager::Inst().GetTexture("uiOverlay.png") );
     uispr.setScale(1, 1);
     uispr.setPosition(window.getSize().x-109, window.getSize().y-63);
 
