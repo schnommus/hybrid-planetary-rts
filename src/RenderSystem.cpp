@@ -205,7 +205,8 @@ void UVSphericalRenderSystem::processEntity (artemis::Entity & e) {
 				// (Cleared at the beginning of every frame in processentities)
 				flatSystem.addNodeID(e.getId());
 
-				if( game.LevelEditorEnabled() ) { // Display terrain nodes
+				// Display terrain nodes if the level editor is up
+				if( game.LevelEditorEnabled() ) {
 					s.setColor(sf::Color(255, 255, 128, 255));
 					s.setRotation(45);
 					s.scale(0.5f, 0.5f);

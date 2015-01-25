@@ -54,8 +54,6 @@ void Game::Run() {
 	sf::Sprite pixelrenderer;
 	pixelrenderer.setScale(3, 3);
 
-	bool firstFrame = true;
-
 	while (realwindow->isOpen()) {
 		sf::Event event;
 		while (realwindow->pollEvent(event)) {
@@ -72,11 +70,6 @@ void Game::Run() {
 
 		cameraSys->process();
 
-		// drawing
-		if( firstFrame ) { // This is so that terrain nodes exist before initial spriting action
-			firstFrame = false;
-			uvRenderSys->process();
-		}
 		terrainRenderSys->process();
 		uvRenderSys->process();
 		minimapRenderSys->process();
@@ -87,10 +80,6 @@ void Game::Run() {
 
 		if( levelEditorEnabled ) {
 			levelEditorSys->process();
-			if( levelEditorSys->queryTerrainAlterations() == true ) {
-				firstFrame = true;
-				terrainRenderSys->reSpriteAll();
-			}
 		}
 
 		Renderer()->display();
@@ -99,6 +88,10 @@ void Game::Run() {
 		realwindow->draw(pixelrenderer);
 		realwindow->display();
 
+		if( queueTerrainRecalculation ) {
+			DoTerrainRecalculation();
+			queueTerrainRecalculation = false;
+		}
 	}
 }
 
@@ -149,7 +142,26 @@ void Game::EnableLevelEditor() {
 	levelEditorEnabled = true;
 }
 
-Game::Game() : levelEditorEnabled(false) {
+Game::Game() : levelEditorEnabled(false), queueTerrainRecalculation(true) {
 
+}
+
+sf::Vector2i Game::LocalMousePosition() {
+	sf::Vector2i mpos = sf::Mouse::getPosition(*realwindow);
+	mpos.x /= 3; // In reality screen is 3x bigger than 'pixelspace'
+	mpos.y /= 3;
+	return mpos;
+}
+
+void Game::RecalculateTerrain() {
+	queueTerrainRecalculation = true;
+}
+
+void Game::DoTerrainRecalculation() {
+	world.loopStart();
+	cameraSys->process();
+	uvRenderSys->process();
+	terrainRenderSys->reSpriteAll();
+	terrainRenderSys->process();
 }
 

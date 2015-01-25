@@ -14,7 +14,7 @@ class XMLEntityFactory;
 class LevelEditorSystem : public artemis::ProcessingSystem {
 public:
 	LevelEditorSystem( Game &gamev, sf::RenderWindow &realwindowv, BackgroundTerrainRenderSystem *terrainRenderSysv, UVSphericalRenderSystem *uvRenderSysv );
-	bool queryTerrainAlterations();
+
 protected:
 	virtual void initialize();
 	virtual void doProcessing();
@@ -30,7 +30,6 @@ private:
 
 	std::vector< sf::Sprite > sprites;
 	int typeIndex;
-	bool terrainAltered;
 	sf::Text topInstructions;
 	sf::Font debugfont;
 };

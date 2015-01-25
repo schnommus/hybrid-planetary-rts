@@ -18,16 +18,23 @@ public:
 	void LoadLevel();
 	void Run();
 
+	void RecalculateTerrain();
+
 	void EnableLevelEditor();
 	bool LevelEditorEnabled() const { return levelEditorEnabled; }
 
 	CameraSystem * Camera() { return cameraSys; }
 	XMLEntityFactory * EntityFactory() { return entFactory; }
 	sf::RenderTexture * Renderer() { return window; }
+	
+	sf::Vector2i LocalMousePosition();
 
 private:
+	void DoTerrainRecalculation();
+
 	artemis::World world;
 	bool levelEditorEnabled;
+	bool queueTerrainRecalculation;
 
 	CameraSystem *cameraSys;
 	XMLEntityFactory *entFactory;
