@@ -9,11 +9,11 @@
 #include "CameraSystem.h"
 #include "RenderSystem.h"
 
-class EntityFactory;
+class XMLEntityFactory;
 
 class LevelEditorSystem : public artemis::ProcessingSystem {
 public:
-	LevelEditorSystem( sf::RenderTarget &windowv, sf::RenderWindow &realwindowv, CameraSystem *cameraSysv, BackgroundTerrainRenderSystem *terrainRenderSysv, UVSphericalRenderSystem *uvRenderSysv, EntityFactory *entFactoryv );
+	LevelEditorSystem( Game &gamev, sf::RenderWindow &realwindowv, BackgroundTerrainRenderSystem *terrainRenderSysv, UVSphericalRenderSystem *uvRenderSysv );
 	bool queryTerrainAlterations();
 protected:
 	virtual void initialize();
@@ -23,12 +23,10 @@ protected:
 	void removeEntities();
 	void entitySelector();
 private:
-	sf::RenderTarget &window;	
+	Game &game;
 	sf::RenderWindow &realWindow;
 	BackgroundTerrainRenderSystem *terrainRenderSys;
-	CameraSystem *cameraSys;
 	UVSphericalRenderSystem *uvRenderSys;
-	EntityFactory *entFactory;
 
 	std::vector< sf::Sprite > sprites;
 	int typeIndex;

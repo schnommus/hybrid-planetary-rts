@@ -6,7 +6,6 @@
 
 #include <cmath>
 
-#define SHOW_NODES
 
 Vector3 DoUVTransform (float u, float v, float sz, Matrix4x3 & world)
 {
@@ -37,8 +36,8 @@ sf::Vector2f ReverseUVTransform (Vector3 in, float sz, Matrix4x3 & world) {
 void BackgroundTerrainRenderSystem::addNodeID (int id) {nodeIds.push_back(id);}
 void BackgroundTerrainRenderSystem::clearNodeIDs () {nodeIds.clear();}
 
-BackgroundTerrainRenderSystem::BackgroundTerrainRenderSystem (sf::RenderTarget & rwindow, CameraSystem & cameraSystemv)
-	: window (rwindow), cameraSystem (cameraSystemv) {
+BackgroundTerrainRenderSystem::BackgroundTerrainRenderSystem (Game &gamev)
+	: game(gamev) {
 	addComponentType<FlatPositionComponent>();
 	addComponentType<SpriteComponent>();
 	addComponentType<BackgroundTerrainTag>();
@@ -47,7 +46,17 @@ BackgroundTerrainRenderSystem::BackgroundTerrainRenderSystem (sf::RenderTarget &
 void BackgroundTerrainRenderSystem::initialize () {
 	positionMapper.init(*world);
 	spriteMapper.init(*world);
-	initialized = false;
+
+	// Add all the background terrain entities
+	for(int i = 0; i != (int)(ceil(game.Renderer()->getSize().x/16.0f)+2); ++i) {
+		for(int j = 0; j != (int)(ceil(game.Renderer()->getSize().y/16.0f)+2); ++j) {
+			artemis::Entity & e = world->createEntity();
+			e.addComponent(new FlatPositionComponent(16*i-16, 16*j-16));
+			e.addComponent(new SpriteComponent("Desert1.png", 1.005f));
+			e.addComponent(new BackgroundTerrainTag());
+			e.refresh();
+		}
+	}
 }
 
 void BackgroundTerrainRenderSystem::processEntities (artemis::ImmutableBag <artemis::Entity*> & bag) {
@@ -55,6 +64,10 @@ void BackgroundTerrainRenderSystem::processEntities (artemis::ImmutableBag <arte
 	artemis::EntityProcessingSystem::processEntities(bag);
 
 	initialized = true;
+}
+
+void BackgroundTerrainRenderSystem::reSpriteAll() {
+	initialized = false;
 }
 
 void BackgroundTerrainRenderSystem::reSprite (artemis::Entity & e) {
@@ -88,15 +101,15 @@ void BackgroundTerrainRenderSystem::processEntity (artemis::Entity & e) {
 	float &x = positionMapper.get(e)->x;
 	float &y = positionMapper.get(e)->y;
 
-	x += cameraSystem.dgamma*500;
-	y += cameraSystem.dtheta*500;
+	x += game.Camera()->dgamma*500;
+	y += game.Camera()->dtheta*500;
 
 	// If terrain goes off screen; put it back on other side of screen with relevant sprite
-	if( x > window.getSize().x+16 || y > window.getSize().y+16 || x < -16 || y < -16 ) {
-		if( x > window.getSize().x+16 ) x -= window.getSize().x+32;
-		if( y > window.getSize().y+16 ) y -= window.getSize().y+32;
-		if( x < -16 ) x += window.getSize().x+32;
-		if( y < -16 ) y += window.getSize().y+32;
+	if( x > game.Renderer()->getSize().x+16 || y > game.Renderer()->getSize().y+16 || x < -16 || y < -16 ) {
+		if( x > game.Renderer()->getSize().x+16 ) x -= game.Renderer()->getSize().x+32;
+		if( y > game.Renderer()->getSize().y+16 ) y -= game.Renderer()->getSize().y+32;
+		if( x < -16 ) x += game.Renderer()->getSize().x+32;
+		if( y < -16 ) y += game.Renderer()->getSize().y+32;
 
 		reSprite(e);
 	}
@@ -107,12 +120,12 @@ void BackgroundTerrainRenderSystem::processEntity (artemis::Entity & e) {
 
 	//Use real position as uv index for lighting
 	float sz = 500.0f;
-	x -= window.getSize().x/2;
-	y -= window.getSize().y/2;
+	x -= game.Renderer()->getSize().x/2;
+	y -= game.Renderer()->getSize().y/2;
 
 	float z = sqrt( sz*sz-x*x-y*y );
-	sf::Vector2f uv = ReverseUVTransform( Vector3(x, y, z), sz, cameraSystem.worldtransform );
-	Vector3 sunrotated = DoUVTransform( uv.x, uv.y, sz, cameraSystem.sun);
+	sf::Vector2f uv = ReverseUVTransform( Vector3(x, y, z), sz, game.Camera()->worldtransform );
+	Vector3 sunrotated = DoUVTransform( uv.x, uv.y, sz, game.Camera()->sun);
 
 	if( sunrotated.z < 0) {
 		float factor = 255-(1.5*abs(sunrotated.z)/(sz/200))/2;
@@ -128,17 +141,17 @@ void BackgroundTerrainRenderSystem::processEntity (artemis::Entity & e) {
 	float fact = pow( sqrt(x*x+y*y)/30.0f, 2);
 	s.setColor( sf::Color(c.r-fact>0?c.r-fact:0, c.g-fact>0?c.g-fact:0, c.b-fact>0?c.b-fact:0, c.a) );
 
-	x += window.getSize().x/2;
-	y += window.getSize().y/2;
+	x += game.Renderer()->getSize().x/2;
+	y += game.Renderer()->getSize().y/2;
 
 
 	s.setPosition( x, y );
 
-	window.draw( s );
+	game.Renderer()->draw( s );
 }
 
-UVSphericalRenderSystem::UVSphericalRenderSystem (sf::RenderTarget & rwindow, CameraSystem & cameraSystemv, BackgroundTerrainRenderSystem & flatSystemv)
-	: window (rwindow), cameraSystem (cameraSystemv), flatSystem (flatSystemv) {
+UVSphericalRenderSystem::UVSphericalRenderSystem (Game &gamev, BackgroundTerrainRenderSystem & flatSystemv)
+	: game(gamev), flatSystem (flatSystemv) {
 	addComponentType<UVPositionComponent>();
 	addComponentType<SpriteComponent>();
 }
@@ -156,8 +169,8 @@ void UVSphericalRenderSystem::processEntities (artemis::ImmutableBag <artemis::E
 void UVSphericalRenderSystem::processEntity (artemis::Entity & e) {
 	float sz = 500.0;
 
-	Vector3 rotated = DoUVTransform( positionMapper.get(e)->u, positionMapper.get(e)->v, sz, cameraSystem.worldtransform );
-	Vector3 sunrotated = DoUVTransform( positionMapper.get(e)->u, positionMapper.get(e)->v, sz, cameraSystem.sun);
+	Vector3 rotated = DoUVTransform( positionMapper.get(e)->u, positionMapper.get(e)->v, sz, game.Camera()->worldtransform );
+	Vector3 sunrotated = DoUVTransform( positionMapper.get(e)->u, positionMapper.get(e)->v, sz, game.Camera()->sun);
 
 	spriteMapper.get(e)->UpdateAnimation();
 
@@ -167,7 +180,7 @@ void UVSphericalRenderSystem::processEntity (artemis::Entity & e) {
 	sf::Vector2f defaultScale = s.getScale();
 
 	// Set the sprite's position, default colour before sun
-	s.setPosition( rotated.x+window.getSize().x/2, rotated.y+window.getSize().y/2 );
+	s.setPosition( rotated.x+game.Renderer()->getSize().x/2, rotated.y+game.Renderer()->getSize().y/2 );
 	s.setColor(sf::Color(255, 255, 255, 255));
 
 	// Darken if on other side of sun
@@ -185,19 +198,24 @@ void UVSphericalRenderSystem::processEntity (artemis::Entity & e) {
 	if( rotated.z > 0.0f ) {
 		int threshold = 80;
 		// If on the screen
-		if( s.getPosition().x > -threshold && s.getPosition().y > -threshold && s.getPosition().x < window.getSize().x+threshold && s.getPosition().y < window.getSize().y +threshold) {
+		if( s.getPosition().x > -threshold && s.getPosition().y > -threshold && s.getPosition().x < game.Renderer()->getSize().x+threshold && s.getPosition().y < game.Renderer()->getSize().y +threshold) {
 
 			// Terrain nodes are invisible on this renderer
 			if( e.getComponent<TerrainNodeTag>() != nullptr ) {
 				// (Cleared at the beginning of every frame in processentities)
 				flatSystem.addNodeID(e.getId());
-				#ifdef SHOW_NODES
-				s.setColor(sf::Color(255, 255, 0, 255));
-				s.setRotation(45);
-				window.draw( s );
-				#endif
+
+				if( game.LevelEditorEnabled() ) { // Display terrain nodes
+					s.setColor(sf::Color(255, 255, 128, 255));
+					s.setRotation(45);
+					s.scale(0.5f, 0.5f);
+					game.Renderer()->draw( s );
+					s.setRotation(0);
+					s.scale(2.0f, 2.0f);
+				}
+
 			} else {
-				window.draw( s );
+				game.Renderer()->draw( s );
 			}
 
 			positionMapper.get(e)->on_screen = true;

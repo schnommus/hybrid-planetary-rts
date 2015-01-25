@@ -1,17 +1,16 @@
 #pragma once
 
 #include "Components.h"
-#include "CameraSystem.h"
+#include "Game.h"
 #include <Artemis/Artemis.h>
 #include <SFML/Graphics.hpp>
 
 class StarSystem : public artemis::EntityProcessingSystem {
 	artemis::ComponentMapper <FlatPositionComponent> positionMapper;
 	std::vector<sf::Vector2f> starPositions;
-	sf::RenderTarget & window;
-	CameraSystem & cameraSystem;
+	Game &game;
 public:
-	StarSystem (sf::RenderTarget & rwindow, CameraSystem & cameraSystemv);
+	StarSystem (Game &gamev);
 	virtual void initialize ();
 	virtual void processEntity (artemis::Entity & e);
 	virtual void processEntities (artemis::ImmutableBag <artemis::Entity*> & bag);
@@ -22,12 +21,11 @@ private:
 	artemis::ComponentMapper <UVPositionComponent> positionMapper;
 	artemis::ComponentMapper <SpriteComponent> spriteMapper;
 	artemis::ComponentMapper <MinimapTag> minimapMapper;
-	sf::RenderTarget & window;
-	CameraSystem & cameraSystem;
+	Game &game;
 	StarSystem * starSys;
 	float sz;
 public:
-	MinimapSphericalRenderSystem (sf::RenderTarget & rwindow, CameraSystem & cameraSystemv);
+	MinimapSphericalRenderSystem (Game &gamev);
 	void drawStars();
 	virtual void initialize ();
 	virtual void processEntity (artemis::Entity & e);

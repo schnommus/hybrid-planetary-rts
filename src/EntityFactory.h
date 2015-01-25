@@ -24,9 +24,9 @@ public:
 	AttributeList attr;
 };
 
-class EntityFactory: public artemis::ProcessingSystem {
+class XMLEntityFactory: public artemis::ProcessingSystem {
 public:
-	EntityFactory( sf::RenderTarget &windowv );
+	XMLEntityFactory();
 	artemis::Entity *Create( std::string type );
 	std::vector< std::string > GetAllTypes();
 protected:
@@ -35,5 +35,4 @@ protected:
 private:
 	std::vector< std::string > allTypes;
 	std::map< std::string, std::vector< ComponentDescriptor > > entityTypeMap;
-	sf::RenderTarget &window;
 };
