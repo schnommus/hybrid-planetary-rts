@@ -1,6 +1,8 @@
 TOP:
 - file-mapped resource fetcher system *DONE*
 - xml type system *DONE*
+- Refactor craploads of pass-ins into 'Game' class (and main loop etc.) 'Universe' design pattern
+- Global event queue
 
 ENABLES:
 -File-mapped resource fetcher system *DONE*

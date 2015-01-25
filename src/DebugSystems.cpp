@@ -3,14 +3,14 @@
 
 #include <sstream>
 
-DrawFPSSystem::DrawFPSSystem (sf::RenderTarget & rwindow)
-	: window (rwindow) {}
+DrawFPSSystem::DrawFPSSystem (Game &gamev)
+	: game(gamev) {}
 
 void DrawFPSSystem::doProcessing () {
 	std::ostringstream oss;
 	oss << int(1.0f/world->getDelta()) << " FPS";
 	fps_text.setString(oss.str());
-	window.draw(fps_text);
+	game.Renderer()->draw(fps_text);
 }
 
 void DrawFPSSystem::initialize () {

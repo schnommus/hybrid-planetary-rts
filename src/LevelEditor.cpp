@@ -4,12 +4,12 @@
 #include <../gamemath/vector3.h>
 #include "ResourceManager.h"
 
-LevelEditorSystem::LevelEditorSystem( sf::RenderTarget &windowv, sf::RenderWindow &realWindowv, CameraSystem *cameraSysv, BackgroundTerrainRenderSystem *terrainRenderSysv, UVSphericalRenderSystem *uvRenderSysv, EntityFactory *entFactoryv )
-	: window( windowv ), realWindow(realWindowv), cameraSys(cameraSysv), terrainRenderSys(terrainRenderSysv), uvRenderSys(uvRenderSysv), entFactory(entFactoryv) { }
+LevelEditorSystem::LevelEditorSystem( Game &gamev, sf::RenderWindow &realWindowv, BackgroundTerrainRenderSystem *terrainRenderSysv, UVSphericalRenderSystem *uvRenderSysv )
+	: game(gamev), realWindow(realWindowv), terrainRenderSys(terrainRenderSysv), uvRenderSys(uvRenderSysv) { }
 
 void LevelEditorSystem::initialize() {
-	for( int i = 0; i != entFactory->GetAllTypes().size(); ++i ) {
-		artemis::Entity &ent = *entFactory->Create(entFactory->GetAllTypes()[i]);
+	for( int i = 0; i != game.EntityFactory()->GetAllTypes().size(); ++i ) {
+		artemis::Entity &ent = *game.EntityFactory()->Create(game.EntityFactory()->GetAllTypes()[i]);
 		sprites.push_back( FetchComponent<SpriteComponent>(ent).sprite );
 		ent.remove();
 	}
@@ -31,28 +31,28 @@ bool LevelEditorSystem::queryTerrainAlterations() {
 
 void LevelEditorSystem::entitySelector() {
 	// Draw the entity selector
-	for( int k = 0,j = 0,i = 0; i != entFactory->GetAllTypes().size(); ++i, ++k ) {
+	for( int k = 0,j = 0,i = 0; i != game.EntityFactory()->GetAllTypes().size(); ++i, ++k ) {
 		if( i % 5 == 0 ) ++j, k=0;
 		sf::Sprite &sprite = sprites[i];
 		sprite.setPosition(290+k*18, 10+18*(j-1));
 		float scale = 16.0f / (float)sprite.getLocalBounds().width; //Normalize to 16x16
 		if( i == typeIndex ) sprite.setScale(1.3*scale, 1.3*scale);
 		else sprite.setScale(scale, scale);
-		window.draw( sprite );
+		game.Renderer()->draw( sprite );
 	}
 	topInstructions.setPosition( 50, 13 );
-	window.draw( topInstructions );
+	game.Renderer()->draw( topInstructions );
 	
 	// Use keys to change selected
 	if( sf::Keyboard::isKeyPressed(sf::Keyboard::M) ) {
 		++typeIndex;
-		if( typeIndex ==entFactory->GetAllTypes().size() ) typeIndex = 0;
+		if( typeIndex == game.EntityFactory()->GetAllTypes().size() ) typeIndex = 0;
 		while( sf::Keyboard::isKeyPressed(sf::Keyboard::M) );
 	}
 
 	if( sf::Keyboard::isKeyPressed(sf::Keyboard::N) ) {
 		--typeIndex;
-		if( typeIndex == -1 ) typeIndex = entFactory->GetAllTypes().size()-1;
+		if( typeIndex == -1 ) typeIndex = game.EntityFactory()->GetAllTypes().size()-1;
 		while( sf::Keyboard::isKeyPressed(sf::Keyboard::N) );
 	}
 }
@@ -62,12 +62,12 @@ void LevelEditorSystem::placeEntities() {
 		sf::Vector2i mpos = sf::Mouse::getPosition(realWindow);
 		mpos.x /= 3; // In reality screen is 3x bigger than 'pixelspace'
 		mpos.y /= 3;
-		mpos.x -= window.getSize().x/2;
-		mpos.y -= window.getSize().y/2;
+		mpos.x -= game.Renderer()->getSize().x/2;
+		mpos.y -= game.Renderer()->getSize().y/2;
 		float sz = 500.0f;
 		float z = sqrt( sz*sz-mpos.x*mpos.x-mpos.y*mpos.y );
-		sf::Vector2f out = ReverseUVTransform( Vector3( mpos.x, mpos.y, z ), sz, cameraSys->worldtransform);
-		artemis::Entity & ent = *entFactory->Create(entFactory->GetAllTypes()[typeIndex]);
+		sf::Vector2f out = ReverseUVTransform( Vector3( mpos.x, mpos.y, z ), sz, game.Camera()->worldtransform);
+		artemis::Entity & ent = *game.EntityFactory()->Create(game.EntityFactory()->GetAllTypes()[typeIndex]);
 		FetchComponent<UVPositionComponent>(ent).u = out.x;
 		FetchComponent<UVPositionComponent>(ent).v = out.y;
 		while( sf::Mouse::isButtonPressed( sf::Mouse::Left ) );

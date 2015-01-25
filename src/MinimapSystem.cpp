@@ -1,11 +1,11 @@
 #include "MinimapSystem.h"
-
+#include "CameraSystem.h"
 #include "RenderSystem.h"
 
 #include <../gamemath/vector3.h>
 
-StarSystem::StarSystem (sf::RenderTarget & rwindow, CameraSystem & cameraSystemv)
-	: window (rwindow), cameraSystem (cameraSystemv) {
+StarSystem::StarSystem (Game &gamev)
+	: game(gamev) {
 	addComponentType<StarTag>();
 	addComponentType<FlatPositionComponent>();
 }
@@ -16,7 +16,7 @@ void StarSystem::initialize () {
 	// Create all the stars
 	for(int i = 0; i != 50; ++i ) {
 		artemis::Entity &e = world->createEntity();
-		e.addComponent(new FlatPositionComponent(window.getSize().x-(rand()%220)/4-36/4, window.getSize().y-(rand()%220)/4-36/4));
+		e.addComponent(new FlatPositionComponent(game.Renderer()->getSize().x-(rand()%220)/4-36/4, game.Renderer()->getSize().y-(rand()%220)/4-36/4));
 		e.addComponent(new StarTag() );
 		e.refresh();
 	}
@@ -35,29 +35,30 @@ void StarSystem::processEntities (artemis::ImmutableBag <artemis::Entity*> & bag
 		starPoints.push_back(sf::Vertex( starPositions[i], sf::Color::White ) );
 	}
 
-	window.draw( &starPoints[0], starPoints.size(), sf::Points );
+	game.Renderer()->draw( &starPoints[0], starPoints.size(), sf::Points );
 }
 
 void StarSystem::processEntity (artemis::Entity & e) {
 	float &x = positionMapper.get(e)->x;
 	float &y = positionMapper.get(e)->y;
 
-	x -= cameraSystem.dgamma*25;
-	y -= cameraSystem.dtheta*25;
+	x -= game.Camera()->dgamma*25;
+	y -= game.Camera()->dtheta*25;
 
-	if( x > window.getSize().x-15/4) x = window.getSize().x-244/4;
-	if( y > window.getSize().y-16/4) y = window.getSize().y-241/4;
-	if( y < window.getSize().y-241/4 ) y = window.getSize().y-16/4;
-	if( x < window.getSize().x-244/4 ) x = window.getSize().x-15/4;
+	auto &r = *game.Renderer();
+	if( x > r.getSize().x-15/4) x = r.getSize().x-244/4;
+	if( y > r.getSize().y-16/4) y = r.getSize().y-241/4;
+	if( y < r.getSize().y-241/4 ) y = r.getSize().y-16/4;
+	if( x < r.getSize().x-244/4 ) x = r.getSize().x-15/4;
 
-	if( pow(y-(window.getSize().y-32), 2) + pow(x-(window.getSize().x-32), 2) > 26*26 ) {
+	if( pow(y-(r.getSize().y-32), 2) + pow(x-(r.getSize().x-32), 2) > 26*26 ) {
 		starPositions.push_back( sf::Vector2f(x, y) );
 	}
 }
 
 
-MinimapSphericalRenderSystem::MinimapSphericalRenderSystem (sf::RenderTarget & rwindow, CameraSystem & cameraSystemv)
-	: window (rwindow), cameraSystem (cameraSystemv) {
+MinimapSphericalRenderSystem::MinimapSphericalRenderSystem (Game &gamev)
+	: game(gamev) {
 	addComponentType<UVPositionComponent>();
 	addComponentType<SpriteComponent>();
 	addComponentType<MinimapTag>();
@@ -70,7 +71,7 @@ void MinimapSphericalRenderSystem::initialize () {
 	spriteMapper.init(*world);
 	minimapMapper.init(*world);
 
-	starSys = (StarSystem*)world->getSystemManager()->setSystem(new StarSystem(window, cameraSystem));
+	starSys = (StarSystem*)world->getSystemManager()->setSystem(new StarSystem(game));
 }
 
 void MinimapSphericalRenderSystem::drawStars() {
@@ -78,8 +79,8 @@ void MinimapSphericalRenderSystem::drawStars() {
 }
 
 void MinimapSphericalRenderSystem::processEntity (artemis::Entity & e) {
-	Vector3 rotated = DoUVTransform( positionMapper.get(e)->u, positionMapper.get(e)->v, sz, cameraSystem.worldtransform );
-	Vector3 sunrotated = DoUVTransform( positionMapper.get(e)->u, positionMapper.get(e)->v, sz, cameraSystem.sun);
+	Vector3 rotated = DoUVTransform( positionMapper.get(e)->u, positionMapper.get(e)->v, sz, game.Camera()->worldtransform );
+	Vector3 sunrotated = DoUVTransform( positionMapper.get(e)->u, positionMapper.get(e)->v, sz,  game.Camera()->sun);
 
 	spriteMapper.get(e)->UpdateAnimation();
 
@@ -89,7 +90,7 @@ void MinimapSphericalRenderSystem::processEntity (artemis::Entity & e) {
 	sf::Vector2f defaultScale = s.getScale();
 
 	// Set the sprite's position, default colour before sun
-	s.setPosition( rotated.x+window.getSize().x-125/4, rotated.y+window.getSize().y-125/4 );
+	s.setPosition( rotated.x+game.Renderer()->getSize().x-125/4, rotated.y+game.Renderer()->getSize().y-125/4 );
 	s.setColor(sf::Color(255, 255, 255, 255));
 
 	//Reduction in size at edges
@@ -115,8 +116,8 @@ void MinimapSphericalRenderSystem::processEntity (artemis::Entity & e) {
 
 	if( rotated.z > 0.0f ) {
 		int threshold = 100;
-		if( s.getPosition().x > -threshold && s.getPosition().y > -threshold && s.getPosition().x < window.getSize().x+threshold && s.getPosition().y < window.getSize().y +threshold) {
-			window.draw( s );
+		if( s.getPosition().x > -threshold && s.getPosition().y > -threshold && s.getPosition().x < game.Renderer()->getSize().x+threshold && s.getPosition().y < game.Renderer()->getSize().y +threshold) {
+			game.Renderer()->draw( s );
 		}
 	} 
 

@@ -8,10 +8,9 @@
 
 using namespace tinyxml2;
 
-EntityFactory::EntityFactory( sf::RenderTarget &windowv )
-	: window( windowv ) { }
+XMLEntityFactory::XMLEntityFactory( ) {}
 
-void EntityFactory::initialize() {
+void XMLEntityFactory::initialize() {
 	auto files = ResourceManager::Inst().AllFilesOfExtension( "xml" );
 	for( int i = 0; i != files.size(); ++i ) {
 		XMLDocument doc;
@@ -39,10 +38,10 @@ void EntityFactory::initialize() {
 	}
 }
 
-void EntityFactory::doProcessing() {
+void XMLEntityFactory::doProcessing() {
 }
 
-artemis::Entity * EntityFactory::Create( std::string type ) {
+artemis::Entity * XMLEntityFactory::Create( std::string type ) {
 	try {
 		std::vector< ComponentDescriptor > &components = entityTypeMap.at(type);
 		artemis::Entity* ent = &world->createEntity();
@@ -57,7 +56,7 @@ artemis::Entity * EntityFactory::Create( std::string type ) {
 	}
 }
 
-std::vector< std::string > EntityFactory::GetAllTypes() {
+std::vector< std::string > XMLEntityFactory::GetAllTypes() {
 	return allTypes;
 }
 
