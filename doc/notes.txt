@@ -4,6 +4,8 @@ TOP:
 - Refactor craploads of pass-ins into 'Game' class (and main loop etc.) 'Universe' design pattern
 - Global event queue
 
+For sprites that 'fly'; give spritecomponent a local offset parameter to center about the object's shadow.
+
 ENABLES:
 -File-mapped resource fetcher system *DONE*
 -Dynamic level editor loading of entity types *DONE*

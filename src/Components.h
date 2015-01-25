@@ -31,6 +31,7 @@ public:
 	float x;
 	float y;
 	FlatPositionComponent (float xv, float yv);
+	static artemis::Component *CreateFromAttributes( AttributeList &att );
 };
 
 
@@ -46,6 +47,7 @@ private:
 	sf::Texture texture;
 };
 
+class UITag : public Tag { };
 
 class TerrainNodeTag : public Tag { };
 

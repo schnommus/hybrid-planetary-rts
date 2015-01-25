@@ -33,10 +33,13 @@ void Game::Initialize() {
 		(MinimapSphericalRenderSystem*)sm->setSystem(new MinimapSphericalRenderSystem(*this));
 
 	fpsSys =
-		(DrawFPSSystem*)sm->setSystem(new DrawFPSSystem(*this));
+		(DrawDebugInfoSystem*)sm->setSystem(new DrawDebugInfoSystem(*this));
 
 	entFactory = 
 		(XMLEntityFactory*)sm->setSystem( new XMLEntityFactory() );
+
+	uiSys = 
+		(UIRenderSystem*)sm->setSystem( new UIRenderSystem(*this));
 
 	levelEditorSys =
 		(LevelEditorSystem*)sm->setSystem(new LevelEditorSystem(*this, *realwindow, terrainRenderSys, uvRenderSys));
@@ -46,10 +49,6 @@ void Game::Initialize() {
 
 void Game::Run() {
 	sf::Clock clock;
-
-	sf::Sprite uispr( ResourceManager::Inst().GetTexture("uiOverlay.png") );
-	uispr.setScale(1, 1);
-	uispr.setPosition(Renderer()->getSize().x-109, Renderer()->getSize().y-63);
 
 	sf::Sprite pixelrenderer;
 	pixelrenderer.setScale(3, 3);
@@ -72,10 +71,12 @@ void Game::Run() {
 
 		terrainRenderSys->process();
 		uvRenderSys->process();
-		minimapRenderSys->process();
 
-		Renderer()->draw(uispr);
+		minimapRenderSys->process();
 		minimapRenderSys->drawStars();
+
+		uiSys->process();
+
 		fpsSys->process();
 
 		if( levelEditorEnabled ) {
@@ -136,6 +137,8 @@ void Game::LoadLevel() {
 
 	PlaceRandom(entFactory, 20, "terrain_snow1", PolarRestrict);
 	PlaceRandom(entFactory, 20, "terrain_snow2", PolarRestrict);
+
+	entFactory->Create("leftpanel");
 }
 
 void Game::EnableLevelEditor() {
@@ -161,7 +164,7 @@ void Game::DoTerrainRecalculation() {
 	world.loopStart();
 	cameraSys->process();
 	uvRenderSys->process();
-	terrainRenderSys->reSpriteAll();
+	terrainRenderSys->Recalculate();
 	terrainRenderSys->process();
 }
 

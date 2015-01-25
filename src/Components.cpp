@@ -6,6 +6,8 @@
 #define register_tag(s, t) if( desc.type == s ) return new t()
 artemis::Component *ComponentFromDescriptor( ComponentDescriptor & desc ) {
 	register_component("sprite_component", SpriteComponent);
+	register_component("flat_position_component", FlatPositionComponent);
+	register_tag("ui_tag", UITag);
 	register_tag("minimap_tag", MinimapTag);
 	register_tag("terrain_node_tag", TerrainNodeTag);
 	register_tag("uv_position_component", UVPositionComponent);
@@ -22,6 +24,10 @@ UVPositionComponent::UVPositionComponent (float uv, float vv) {
 FlatPositionComponent::FlatPositionComponent (float xv, float yv) {
 	this->x = xv;
 	this->y = yv;
+}
+
+artemis::Component * FlatPositionComponent::CreateFromAttributes( AttributeList &att ) {
+	return new FlatPositionComponent( att.Float("x", 0.0), att.Float("y", 0.0));
 }
 
 

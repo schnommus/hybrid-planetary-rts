@@ -13,21 +13,39 @@ sf::Vector2f ReverseUVTransform (Vector3 in, float sz, Matrix4x3 & world);
 class BackgroundTerrainRenderSystem : public artemis::EntityProcessingSystem
 {
 private:
+
 	artemis::ComponentMapper <FlatPositionComponent> positionMapper;
 	artemis::ComponentMapper <SpriteComponent> spriteMapper;
 	std::vector <int> nodeIds;
 	bool initialized;
 	Game &game;
+protected:
+
+	virtual void initialize ();
+	virtual void processEntities (artemis::ImmutableBag <artemis::Entity*> & bag);
+	void reSprite (artemis::Entity & e);
+	virtual void processEntity (artemis::Entity & e);
+
 public:
 	void addNodeID (int id);
 	void clearNodeIDs ();
 	BackgroundTerrainRenderSystem (Game &gamev);
-	virtual void initialize ();
-	virtual void processEntities (artemis::ImmutableBag <artemis::Entity*> & bag);
-	void reSpriteAll();
-	void reSprite (artemis::Entity & e);
-	virtual void processEntity (artemis::Entity & e);
+	void Recalculate();
 };
+
+class UIRenderSystem : public artemis::EntityProcessingSystem
+{
+private:
+	artemis::ComponentMapper <FlatPositionComponent> positionMapper;
+	artemis::ComponentMapper <SpriteComponent> spriteMapper;
+	Game &game;
+protected:
+	virtual void initialize ();
+	virtual void processEntity (artemis::Entity & e);
+public:
+	UIRenderSystem(Game &gamev);
+};
+
 
 
 class UVSphericalRenderSystem : public artemis::EntityProcessingSystem

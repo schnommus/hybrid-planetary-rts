@@ -4,9 +4,9 @@
 #include "Game.h"
 #include <SFML/Graphics.hpp>
 
-class DrawFPSSystem : public artemis::ProcessingSystem {
+class DrawDebugInfoSystem : public artemis::ProcessingSystem {
 public:
-	DrawFPSSystem (Game &gamev);
+	DrawDebugInfoSystem (Game &gamev);
 protected:
 	virtual void doProcessing ();
 	virtual void initialize ();

@@ -1,6 +1,7 @@
 #include "MinimapSystem.h"
 #include "CameraSystem.h"
 #include "RenderSystem.h"
+#include "ResourceManager.h"
 
 #include <../gamemath/vector3.h>
 
@@ -58,12 +59,15 @@ void StarSystem::processEntity (artemis::Entity & e) {
 
 
 MinimapSphericalRenderSystem::MinimapSphericalRenderSystem (Game &gamev)
-	: game(gamev) {
+	: game(gamev), planet_overlay( ResourceManager::Inst().GetTexture("uiOverlay.png") ) {
 	addComponentType<UVPositionComponent>();
 	addComponentType<SpriteComponent>();
 	addComponentType<MinimapTag>();
 
 	sz = 25;
+
+	planet_overlay.setScale(1, 1);
+	planet_overlay.setPosition(game.Renderer()->getSize().x-64, game.Renderer()->getSize().y-63);
 }
 
 void MinimapSphericalRenderSystem::initialize () {
@@ -75,6 +79,8 @@ void MinimapSphericalRenderSystem::initialize () {
 }
 
 void MinimapSphericalRenderSystem::drawStars() {
+	//Overlay is black background for stars to draw on
+	game.Renderer()->draw(planet_overlay);
 	starSys->process();
 }
 
