@@ -9,7 +9,8 @@ class BackgroundTerrainRenderSystem;
 class UVSphericalRenderSystem;
 class LevelEditorSystem;
 class MinimapSphericalRenderSystem;
-class DrawFPSSystem;
+class DrawDebugInfoSystem;
+class UIRenderSystem;
 
 class Game {
 public:
@@ -47,5 +48,6 @@ private:
 	UVSphericalRenderSystem *uvRenderSys;
 	LevelEditorSystem *levelEditorSys;
 	MinimapSphericalRenderSystem *minimapRenderSys;
-	DrawFPSSystem *fpsSys;
+	DrawDebugInfoSystem *fpsSys;
+	UIRenderSystem *uiSys;
 };

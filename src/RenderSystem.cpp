@@ -1,5 +1,5 @@
 #include "RenderSystem.h"
-
+#include <algorithm>
 #include "CameraSystem.h"
 
 #include <../gamemath/vector3.h>
@@ -66,7 +66,7 @@ void BackgroundTerrainRenderSystem::processEntities (artemis::ImmutableBag <arte
 	initialized = true;
 }
 
-void BackgroundTerrainRenderSystem::reSpriteAll() {
+void BackgroundTerrainRenderSystem::Recalculate() {
 	initialized = false;
 }
 
@@ -161,16 +161,42 @@ void UVSphericalRenderSystem::initialize () {
 	spriteMapper.init(*world);
 }
 
+bool CompareDrawOrder( artemis::Entity *lhs, artemis::Entity *rhs ) {
+	return FetchComponent<UVPositionComponent>(*lhs).screen_y < FetchComponent<UVPositionComponent>(*rhs).screen_y;
+}
+
 void UVSphericalRenderSystem::processEntities (artemis::ImmutableBag <artemis::Entity*> & bag) {
 	flatSystem.clearNodeIDs();
-	artemis::EntityProcessingSystem::processEntities(bag);
+	
+	// Sort & Process entities by their draw order (This is more expensive than I'd like it to be!)
+	std::vector<artemis::Entity*> onscreen;
+	std::vector<artemis::Entity*> offscreen;
+	for( int i = 0; i != bag.getCount(); ++i) {
+		artemis::Entity *ent = bag.get(i);
+		if( FetchComponent<UVPositionComponent>(*ent).on_screen )
+			onscreen.push_back(ent);
+		else
+			offscreen.push_back(ent);
+	}
+
+	std::sort( onscreen.begin(), onscreen.end(), CompareDrawOrder );
+
+	for( int i = 0; i != onscreen.size(); ++i ) {
+		processEntity(*onscreen[i]);
+	}
+
+	for( int i = 0; i != offscreen.size(); ++i ) {
+		processEntity(*offscreen[i]);
+	}
 }
 
 void UVSphericalRenderSystem::processEntity (artemis::Entity & e) {
 	float sz = 500.0;
 
-	Vector3 rotated = DoUVTransform( positionMapper.get(e)->u, positionMapper.get(e)->v, sz, game.Camera()->worldtransform );
-	Vector3 sunrotated = DoUVTransform( positionMapper.get(e)->u, positionMapper.get(e)->v, sz, game.Camera()->sun);
+	UVPositionComponent &uvpos = *positionMapper.get(e);
+
+	Vector3 rotated = DoUVTransform( uvpos.u, uvpos.v, sz, game.Camera()->worldtransform );
+	Vector3 sunrotated = DoUVTransform( uvpos.u, uvpos.v, sz, game.Camera()->sun);
 
 	spriteMapper.get(e)->UpdateAnimation();
 
@@ -191,9 +217,9 @@ void UVSphericalRenderSystem::processEntity (artemis::Entity & e) {
 	}
 
 	// Update parameters on UV component for use in other areas
-	positionMapper.get(e)->screen_x = s.getPosition().x;
-	positionMapper.get(e)->screen_y = s.getPosition().y;
-	positionMapper.get(e)->colour = s.getColor();
+	uvpos.screen_x = s.getPosition().x;
+	uvpos.screen_y = s.getPosition().y;
+	uvpos.colour = s.getColor();
 
 	if( rotated.z > 0.0f ) {
 		int threshold = 80;
@@ -219,12 +245,32 @@ void UVSphericalRenderSystem::processEntity (artemis::Entity & e) {
 				game.Renderer()->draw( s );
 			}
 
-			positionMapper.get(e)->on_screen = true;
+			uvpos.on_screen = true;
 
 		}
 	} else {
-		positionMapper.get(e)->on_screen = false;
+		uvpos.on_screen = false;
 	}
 
 	s.setScale( defaultScale );
 }
+
+UIRenderSystem::UIRenderSystem( Game &gamev ) : game(gamev) {
+	addComponentType<FlatPositionComponent>();
+	addComponentType<SpriteComponent>();
+	addComponentType<UITag>();
+}
+
+void UIRenderSystem::initialize() {
+	positionMapper.init(*world);
+	spriteMapper.init(*world);
+}
+
+void UIRenderSystem::processEntity( artemis::Entity & e ) {
+	sf::Sprite &s = spriteMapper.get(e)->sprite;
+	float &x = positionMapper.get(e)->x;
+	float &y = positionMapper.get(e)->y;
+	s.setPosition( x, y );
+	game.Renderer()->draw( s );
+}
+

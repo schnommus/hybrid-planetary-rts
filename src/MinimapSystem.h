@@ -22,6 +22,7 @@ private:
 	artemis::ComponentMapper <SpriteComponent> spriteMapper;
 	artemis::ComponentMapper <MinimapTag> minimapMapper;
 	Game &game;
+	sf::Sprite planet_overlay;
 	StarSystem * starSys;
 	float sz;
 public:
