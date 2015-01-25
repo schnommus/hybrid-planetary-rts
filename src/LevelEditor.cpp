@@ -15,18 +15,9 @@ void LevelEditorSystem::initialize() {
 	}
 
 	typeIndex = 0;
-	terrainAltered = false;
 	topInstructions.setFont( ResourceManager::Inst().GetFont("RiskofRainFont.ttf") );
 	topInstructions.setCharacterSize(7);
 	topInstructions.setString("Place: LMB. Cycle: N/M. Delete: RMB. Selector: ");
-}
-
-bool LevelEditorSystem::queryTerrainAlterations() {
-	if( terrainAltered )  {
-		terrainAltered = false;
-		return true;
-	}
-	return false;
 }
 
 void LevelEditorSystem::entitySelector() {
@@ -59,9 +50,7 @@ void LevelEditorSystem::entitySelector() {
 
 void LevelEditorSystem::placeEntities() {
 	if( sf::Mouse::isButtonPressed( sf::Mouse::Left ) ) {
-		sf::Vector2i mpos = sf::Mouse::getPosition(realWindow);
-		mpos.x /= 3; // In reality screen is 3x bigger than 'pixelspace'
-		mpos.y /= 3;
+		sf::Vector2i mpos = game.LocalMousePosition();
 		mpos.x -= game.Renderer()->getSize().x/2;
 		mpos.y -= game.Renderer()->getSize().y/2;
 		float sz = 500.0f;
@@ -71,16 +60,13 @@ void LevelEditorSystem::placeEntities() {
 		FetchComponent<UVPositionComponent>(ent).u = out.x;
 		FetchComponent<UVPositionComponent>(ent).v = out.y;
 		while( sf::Mouse::isButtonPressed( sf::Mouse::Left ) );
-		
-		terrainAltered = true;
+		game.RecalculateTerrain();
 	}
 }
 
 void LevelEditorSystem::removeEntities() {
 	if( sf::Mouse::isButtonPressed( sf::Mouse::Right ) ) {
-		sf::Vector2i mpos = sf::Mouse::getPosition(realWindow);
-		mpos.x /= 3; // In reality screen is 3x bigger than 'pixelspace'
-		mpos.y /= 3;
+		sf::Vector2i mpos = game.LocalMousePosition();
 		
 		for( int i = 0; i != world->getEntityManager()->getTotalCreated(); ++i ) {
 			if( &world->getEntityManager()->getEntity(i) != nullptr ) {
@@ -97,8 +83,7 @@ void LevelEditorSystem::removeEntities() {
 		
 		//Uncomment to allow deletion of only one object at a time
 		//while( sf::Mouse::isButtonPressed( sf::Mouse::Right ) );
-
-		terrainAltered = true;
+		game.RecalculateTerrain();
 	}
 }
 
