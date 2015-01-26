@@ -11,6 +11,7 @@ class LevelEditorSystem;
 class MinimapSphericalRenderSystem;
 class DrawDebugInfoSystem;
 class UIRenderSystem;
+class SelectionSystem;
 
 class Game {
 public:
@@ -53,4 +54,5 @@ private:
 	MinimapSphericalRenderSystem *minimapRenderSys;
 	DrawDebugInfoSystem *fpsSys;
 	UIRenderSystem *uiSys;
+	SelectionSystem *selectionSys;
 };

@@ -40,7 +40,8 @@ public:
 	sf::Sprite sprite;
 	sf::Clock frameClock;
 	int nFrames;
-	SpriteComponent (std::string name, float scale = 1.0f, int frames = 1);
+	int offset_x, offset_y;
+	SpriteComponent (std::string name, float scale = 1.0f, int frames = 1, int offset_xv=0, int offset_yv=0);
 	void UpdateAnimation ();
 	static artemis::Component *CreateFromAttributes( AttributeList &att );
 	sf::Texture texture;
@@ -51,6 +52,14 @@ class NameComponent : public artemis::Component  {
 		NameComponent( std::string namev ) : name(namev) {}
 		std::string name;
 		static artemis::Component *CreateFromAttributes( AttributeList &att );
+};
+
+class SelectableComponent : public artemis::Component {
+public:
+	SelectableComponent( std::string descriptionv ) : description(descriptionv) { }
+	static artemis::Component *CreateFromAttributes( AttributeList &att );
+	std::string description;
+	bool isSelected;
 };
 
 class UITag : public Tag { };

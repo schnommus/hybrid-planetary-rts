@@ -1,5 +1,6 @@
 <entity type_name='plant2'>
-	<sprite_component file_name='Plant2.png' animation_frames='1'/>
+	<sprite_component file_name='Plant2.png' offset_y='6'/>
+	<selectable_component description='Pear Cactus'/>
 	<minimap_tag/>
 	<uv_position_component/>
 </entity>

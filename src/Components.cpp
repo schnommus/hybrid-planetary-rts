@@ -8,6 +8,7 @@ artemis::Component *ComponentFromDescriptor( ComponentDescriptor & desc ) {
 	register_component("sprite_component", SpriteComponent);
 	register_component("flat_position_component", FlatPositionComponent);
 	register_component("name_tag", NameComponent);
+	register_component("selectable_component", SelectableComponent);
 	register_tag("ui_tag", UITag);
 	register_tag("minimap_tag", MinimapTag);
 	register_tag("terrain_node_tag", TerrainNodeTag);
@@ -32,12 +33,12 @@ artemis::Component * FlatPositionComponent::CreateFromAttributes( AttributeList 
 }
 
 
-SpriteComponent::SpriteComponent (std::string name, float scale, int frames)
-	: nFrames (frames) {
+SpriteComponent::SpriteComponent (std::string name, float scale, int frames, int offset_xv, int offset_yv)
+	: nFrames (frames), offset_x(offset_xv), offset_y(offset_yv) {
 	sprite.setTexture( ResourceManager::Inst().GetTexture(name) );
 	sprite.setTextureRect( sf::IntRect((rand()%nFrames)*sprite.getLocalBounds().width/frames, 0, sprite.getLocalBounds().width/frames, sprite.getLocalBounds().height ) );
 	sprite.setScale(scale, scale);
-	sprite.setOrigin( sprite.getLocalBounds().width/2, sprite.getLocalBounds().height/2 );
+	sprite.setOrigin( sprite.getLocalBounds().width/2+offset_x, sprite.getLocalBounds().height/2+offset_y );
 }
 
 
@@ -55,9 +56,13 @@ void SpriteComponent::UpdateAnimation () {
 }
 
 artemis::Component *SpriteComponent::CreateFromAttributes( AttributeList &att ) {
-	return new SpriteComponent( att.String("file_name", "point.png"), att.Float("scale", 1.0f), att.Int("animation_frames", 1));
+	return new SpriteComponent( att.String("file_name", "point.png"), att.Float("scale", 1.0f), att.Int("animation_frames", 1), att.Int("offset_x", 0), att.Int("offset_y", 0));
 }
 
 artemis::Component * NameComponent::CreateFromAttributes( AttributeList &att ) {
 	return new NameComponent( att.String("name", "unknown"));
+}
+
+artemis::Component * SelectableComponent::CreateFromAttributes( AttributeList &att ) {
+	return new SelectableComponent( att.String("description", "Unknown Object") );
 }

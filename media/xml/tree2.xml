@@ -1,5 +1,6 @@
 <entity type_name='tree2'>
-	<sprite_component file_name='Tree2.png'/>
+	<sprite_component file_name='Tree2.png' offset_y='13' />
+	<selectable_component description='Pine Tree'/>
 	<minimap_tag/>
 	<uv_position_component/>
 </entity>
