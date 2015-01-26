@@ -9,6 +9,7 @@
 #include "LevelEditor.h"
 #include "EntityFactory.h"
 #include "ResourceManager.h"
+#include "SelectionSystem.h"
 
 #include <fstream>
 #include <sstream>
@@ -47,6 +48,9 @@ void Game::Initialize() {
 	levelEditorSys =
 		(LevelEditorSystem*)sm->setSystem(new LevelEditorSystem(*this, *realwindow, terrainRenderSys, uvRenderSys));
 
+	selectionSys = 
+		(SelectionSystem*)sm->setSystem(new SelectionSystem(*this));
+
 	sm->initializeAll();
 }
 
@@ -75,12 +79,18 @@ void Game::Run() {
 		cameraSys->process();
 
 		terrainRenderSys->process();
+
+		selectionSys->process();
+		selectionSys->drawUnder();
+
 		uvRenderSys->process();
 
 		minimapRenderSys->process();
 		minimapRenderSys->drawStars();
 
 		uiSys->process();
+
+		selectionSys->drawOver();
 
 		fpsSys->process();
 

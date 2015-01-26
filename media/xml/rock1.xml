@@ -1,5 +1,6 @@
 <entity type_name='rock1'>
 	<sprite_component file_name='Rock1.png' animation_frames='1'/>
+	<selectable_component description='Icy Rock'/>
 	<minimap_tag/>
 	<uv_position_component/>
 </entity>
