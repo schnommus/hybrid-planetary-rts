@@ -28,6 +28,9 @@ void CameraSystem::doProcessing () {
 	m2.setupRotate( 2, dgamma );
 
 	worldtransform = worldtransform * (m1*m2);
+
+	m2.setupRotate( 2, 0.2*world->getDelta() );
+	sun = sun * m2;
 }
 
 void CameraSystem::initialize () {

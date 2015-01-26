@@ -35,6 +35,9 @@ void XMLEntityFactory::initialize() {
 			entityTypeMap[typeName].push_back(desc);
 			currentComponent = currentComponent->NextSiblingElement();
 		}
+		AttributeList attr; attr.attributeMap["name"] = typeName;
+		ComponentDescriptor name( "name_tag", attr );
+		entityTypeMap[typeName].push_back(name);
 	}
 }
 

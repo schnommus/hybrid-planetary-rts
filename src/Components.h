@@ -43,8 +43,14 @@ public:
 	SpriteComponent (std::string name, float scale = 1.0f, int frames = 1);
 	void UpdateAnimation ();
 	static artemis::Component *CreateFromAttributes( AttributeList &att );
-private:
 	sf::Texture texture;
+};
+
+class NameComponent : public artemis::Component  {
+	public:
+		NameComponent( std::string namev ) : name(namev) {}
+		std::string name;
+		static artemis::Component *CreateFromAttributes( AttributeList &att );
 };
 
 class UITag : public Tag { };
@@ -53,7 +59,11 @@ class TerrainNodeTag : public Tag { };
 
 class MinimapTag : public Tag { };
 
-class BackgroundTerrainTag : public Tag { };
+class BackgroundTerrainTag : public Tag { 
+public:
+	int parentId;
+	sf::Sprite sprite;
+};
 
 class StarTag : public Tag { };
 

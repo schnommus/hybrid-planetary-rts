@@ -10,6 +10,9 @@
 #include "EntityFactory.h"
 #include "ResourceManager.h"
 
+#include <fstream>
+#include <sstream>
+
 void Game::Initialize() {
 	// Artemis containers
 	artemis::SystemManager * sm = world.getSystemManager();
@@ -48,6 +51,8 @@ void Game::Initialize() {
 }
 
 void Game::Run() {
+	entFactory->Create("leftpanel");
+
 	sf::Clock clock;
 
 	sf::Sprite pixelrenderer;
@@ -124,21 +129,13 @@ void PlaceRandom(XMLEntityFactory* ef, int n, std::string type, bool (*restrict)
 	}
 }
 
-void Game::LoadLevel() {
+void Game::GenerateLevel() {
 	PlaceRandom(entFactory, 130, "terrain_desert1", AvoidPolarRestrict);
 	PlaceRandom(entFactory, 130, "terrain_desert2", AvoidPolarRestrict);
 	PlaceRandom(entFactory, 55, "terrain_desert3", AvoidPolarRestrict);
 
-	PlaceRandom(entFactory, 50, "airdispensor", NoRestrict );
-	PlaceRandom(entFactory, 5, "artefact", NoRestrict );
-	PlaceRandom(entFactory, 40, "plant1", AvoidPolarRestrict );
-	PlaceRandom(entFactory, 40, "plant2", AvoidPolarRestrict );
-	PlaceRandom(entFactory, 40, "rock1", PolarRestrict );
-
 	PlaceRandom(entFactory, 20, "terrain_snow1", PolarRestrict);
 	PlaceRandom(entFactory, 20, "terrain_snow2", PolarRestrict);
-
-	entFactory->Create("leftpanel");
 }
 
 void Game::EnableLevelEditor() {
@@ -166,5 +163,38 @@ void Game::DoTerrainRecalculation() {
 	uvRenderSys->process();
 	terrainRenderSys->Recalculate();
 	terrainRenderSys->process();
+}
+
+void Game::SaveLevel() {
+	std::ofstream file;
+	file.open( "../media/level.txt" );
+	for( int i = 0; i != world.getEntityManager()->getTotalCreated(); ++i ) {
+		if( &world.getEntityManager()->getEntity(i) != nullptr ) {
+			if( world.getEntityManager()->getEntity(i).getComponent<UVPositionComponent>() != nullptr ) {
+				UVPositionComponent &pos = *((UVPositionComponent*)world.getEntityManager()->getEntity(i).getComponent<UVPositionComponent>());
+				file << FetchComponent<NameComponent>(world.getEntityManager()->getEntity(i)).name << " " << pos.u << " " << pos.v << std::endl;
+			}
+		}
+	}
+	file.close();
+}
+
+void Game::LoadLevel() {
+	std::string line;
+	std::ifstream file ("../media/level.txt");
+	if (file.is_open()) {
+		while ( getline (file,line) ) {
+			std::istringstream iss(line);
+			std::string type;
+			float u, v;
+			iss >> type >> u >> v;
+			artemis::Entity & ent = *EntityFactory()->Create(type);
+			FetchComponent<UVPositionComponent>(ent).u = u;
+			FetchComponent<UVPositionComponent>(ent).v = v;
+		}
+		file.close();
+	}
+
+	else std::cout << "Unable to level file"; 
 }
 

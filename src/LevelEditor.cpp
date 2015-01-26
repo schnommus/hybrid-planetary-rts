@@ -57,8 +57,10 @@ void LevelEditorSystem::placeEntities() {
 		float z = sqrt( sz*sz-mpos.x*mpos.x-mpos.y*mpos.y );
 		sf::Vector2f out = ReverseUVTransform( Vector3( mpos.x, mpos.y, z ), sz, game.Camera()->worldtransform);
 		artemis::Entity & ent = *game.EntityFactory()->Create(game.EntityFactory()->GetAllTypes()[typeIndex]);
-		FetchComponent<UVPositionComponent>(ent).u = out.x;
-		FetchComponent<UVPositionComponent>(ent).v = out.y;
+		if(!&FetchComponent<UITag>(ent)) {
+			FetchComponent<UVPositionComponent>(ent).u = out.x;
+			FetchComponent<UVPositionComponent>(ent).v = out.y;
+		} else ent.remove();
 		while( sf::Mouse::isButtonPressed( sf::Mouse::Left ) );
 		game.RecalculateTerrain();
 	}
