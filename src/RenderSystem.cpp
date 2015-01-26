@@ -39,20 +39,17 @@ void BackgroundTerrainRenderSystem::clearNodeIDs () {nodeIds.clear();}
 BackgroundTerrainRenderSystem::BackgroundTerrainRenderSystem (Game &gamev)
 	: game(gamev) {
 	addComponentType<FlatPositionComponent>();
-	addComponentType<SpriteComponent>();
 	addComponentType<BackgroundTerrainTag>();
 }
 
 void BackgroundTerrainRenderSystem::initialize () {
 	positionMapper.init(*world);
-	spriteMapper.init(*world);
 
 	// Add all the background terrain entities
 	for(int i = 0; i != (int)(ceil(game.Renderer()->getSize().x/16.0f)+2); ++i) {
 		for(int j = 0; j != (int)(ceil(game.Renderer()->getSize().y/16.0f)+2); ++j) {
 			artemis::Entity & e = world->createEntity();
 			e.addComponent(new FlatPositionComponent(16*i-16, 16*j-16));
-			e.addComponent(new SpriteComponent("Desert1.png", 1.005f));
 			e.addComponent(new BackgroundTerrainTag());
 			e.refresh();
 		}
@@ -73,7 +70,6 @@ void BackgroundTerrainRenderSystem::Recalculate() {
 void BackgroundTerrainRenderSystem::reSprite (artemis::Entity & e) {
 	if( nodeIds.empty() ) return;
 
-	sf::Sprite &s = spriteMapper.get(e)->sprite;
 	float &x = positionMapper.get(e)->x;
 	float &y = positionMapper.get(e)->y;
 
@@ -93,11 +89,13 @@ void BackgroundTerrainRenderSystem::reSprite (artemis::Entity & e) {
 		}
 	}
 
-	s.setTexture( * ( (SpriteComponent*)world->getEntityManager()->getEntity(nodeIds[current]).getComponent<SpriteComponent>())->sprite.getTexture() );
+	FetchComponent<BackgroundTerrainTag>(e).sprite.setTexture( *FetchComponent<SpriteComponent>(world->getEntityManager()->getEntity(nodeIds[current])).sprite.getTexture() );
+	FetchComponent<BackgroundTerrainTag>(e).parentId = nodeIds[current];
 }
 
 void BackgroundTerrainRenderSystem::processEntity (artemis::Entity & e) {
-	sf::Sprite &s = spriteMapper.get(e)->sprite;
+	if( nodeIds.empty() ) return;
+
 	float &x = positionMapper.get(e)->x;
 	float &y = positionMapper.get(e)->y;
 
@@ -116,6 +114,13 @@ void BackgroundTerrainRenderSystem::processEntity (artemis::Entity & e) {
 
 	if( !initialized ) {
 		reSprite(e);
+	}
+
+	sf::Sprite &s = FetchComponent<BackgroundTerrainTag>(e).sprite;
+	s.setScale(1.005f, 1.005f);
+
+	if( &world->getEntityManager()->getEntity(FetchComponent<BackgroundTerrainTag>(e).parentId) != nullptr ) {
+		s.setTextureRect( FetchComponent<SpriteComponent>(world->getEntityManager()->getEntity(FetchComponent<BackgroundTerrainTag>(e).parentId)).sprite.getTextureRect() );
 	}
 
 	//Use real position as uv index for lighting

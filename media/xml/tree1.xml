@@ -1,0 +1,5 @@
+<entity type_name='tree1'>
+	<sprite_component file_name='Tree1.png'/>
+	<minimap_tag/>
+	<uv_position_component/>
+</entity>

@@ -15,7 +15,6 @@ class BackgroundTerrainRenderSystem : public artemis::EntityProcessingSystem
 private:
 
 	artemis::ComponentMapper <FlatPositionComponent> positionMapper;
-	artemis::ComponentMapper <SpriteComponent> spriteMapper;
 	std::vector <int> nodeIds;
 	bool initialized;
 	Game &game;

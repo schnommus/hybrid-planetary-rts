@@ -1,0 +1,6 @@
+<entity type_name='terrain_water2'>
+	<sprite_component file_name='Water2.png' animation_frames='12'/>
+	<minimap_tag/>
+	<terrain_node_tag/>
+	<uv_position_component/>
+</entity>

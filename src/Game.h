@@ -16,7 +16,10 @@ class Game {
 public:
 	Game();
 	void Initialize();
+	void GenerateLevel();
+	void SaveLevel();
 	void LoadLevel();
+
 	void Run();
 
 	void RecalculateTerrain();

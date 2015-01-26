@@ -7,6 +7,7 @@
 artemis::Component *ComponentFromDescriptor( ComponentDescriptor & desc ) {
 	register_component("sprite_component", SpriteComponent);
 	register_component("flat_position_component", FlatPositionComponent);
+	register_component("name_tag", NameComponent);
 	register_tag("ui_tag", UITag);
 	register_tag("minimap_tag", MinimapTag);
 	register_tag("terrain_node_tag", TerrainNodeTag);
@@ -55,4 +56,8 @@ void SpriteComponent::UpdateAnimation () {
 
 artemis::Component *SpriteComponent::CreateFromAttributes( AttributeList &att ) {
 	return new SpriteComponent( att.String("file_name", "point.png"), att.Float("scale", 1.0f), att.Int("animation_frames", 1));
+}
+
+artemis::Component * NameComponent::CreateFromAttributes( AttributeList &att ) {
+	return new NameComponent( att.String("name", "unknown"));
 }
