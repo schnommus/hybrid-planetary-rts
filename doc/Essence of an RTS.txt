@@ -8,7 +8,8 @@ Pretty much every unit:
 		OR EVEN
 			The BUILDING has multiple
 				<command_button_component texture='Button.png' type='spawn' object='grunt' cost='100'>
-				where the component switches across the button type to establish behaviour on a clicktrigger from UISystem.
+				where the component switches across the button type to establish behaviour on a clicktrigger from UISystem
+				perhaps a system switches across every relevant type of component
 	-Has health, perhaps other stats
 
 Static unit:
@@ -20,3 +21,19 @@ Dynamic Unit:
 	-Local FSM; I.e if movement hasn't finished, run idle FSM which could be attack nearest within LOS
 	-Can attack; with an attack range. Melee could simply be treated as a really short-range attack
 	-Perhaps if a unit is forced to melee however; it will? (too close a range)
+
+Abstracting commands.
+	-Have <command_attack> <command_move> & <command_rally> components
+	-Update an update method on each of the command components if it is_attacking or is_moving etc
+	-could have command_idleattack which uses command_attack if it's available, when something is within a range.
+	-Are prioritized in that order so (Iterating through selected entities) in CommandSystem (when RMB is CLICKED (not just down))
+		-If entity has command_attack -> If there is an attack(able) entity under the cursor; do that & break. otherwise, drop to move.
+		-If entity has command_move -> do that & break;
+		-If entity has command_rally -> do that & break;
+		-In each case; the command disables & removes (safely) all existing commands
+	-E.g command_attack:
+		-Whenever it's within range; use attack timer and perform attacks
+		-Issues a command_move to a bit within attack range of enemy, and will reissue one every time it's out of range.
+		-I.e delete the existing 'move' command and replace it with another one.
+	-Command parameters should be parameters to Initiate() i.e for command_move Initiate(float u, float v) or command_attack Initiate( int entityID [deletion precaution] )
+		
