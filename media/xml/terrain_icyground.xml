@@ -1,0 +1,7 @@
+<entity type_name='terrain_icyground'>
+	<sprite_component file_name='MoreIcyGround.png'/>
+	<transform_on_biome type='temperate' newentity='terrain_desert2'/>
+	<minimap_tag/>
+	<terrain_node_tag/>
+	<uv_position_component/>
+</entity>

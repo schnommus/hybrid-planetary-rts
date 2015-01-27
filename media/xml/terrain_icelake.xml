@@ -1,0 +1,7 @@
+<entity type_name='terrain_icelake'>
+	<sprite_component file_name='IcyLake.png'/>
+	<transform_on_biome type='temperate' newentity='terrain_water1'/>
+	<minimap_tag/>
+	<terrain_node_tag/>
+	<uv_position_component/>
+</entity>

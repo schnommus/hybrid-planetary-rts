@@ -2,6 +2,9 @@
 #include "EntityFactory.h"
 #include "ResourceManager.h"
 
+#include <sstream>
+#include <iostream>
+
 #define register_component(s, t) if( desc.type == s ) return t::CreateFromAttributes( desc.attr )
 #define register_tag(s, t) if( desc.type == s ) return new t()
 artemis::Component *ComponentFromDescriptor( ComponentDescriptor & desc ) {
@@ -9,6 +12,7 @@ artemis::Component *ComponentFromDescriptor( ComponentDescriptor & desc ) {
 	register_component("flat_position_component", FlatPositionComponent);
 	register_component("name_tag", NameComponent);
 	register_component("selectable_component", SelectableComponent);
+	register_component("transform_on_biome", TransformOnBiome);
 	register_tag("ui_tag", UITag);
 	register_tag("minimap_tag", MinimapTag);
 	register_tag("terrain_node_tag", TerrainNodeTag);
@@ -65,4 +69,24 @@ artemis::Component * NameComponent::CreateFromAttributes( AttributeList &att ) {
 
 artemis::Component * SelectableComponent::CreateFromAttributes( AttributeList &att ) {
 	return new SelectableComponent( att.String("description", "Unknown Object") );
+}
+
+artemis::Component * TransformOnBiome::CreateFromAttributes( AttributeList &att ) {
+	return new TransformOnBiome( att.String("type", "notspecified"), att.String("newentity", "notspecified") );
+}
+
+TransformOnBiome::TransformOnBiome( std::string typev, std::string entityv ) {
+	typev.erase(std::remove_if(typev.begin(), typev.end(), ::isspace), typev.end());
+	entityv.erase(std::remove_if(entityv.begin(), entityv.end(), ::isspace), entityv.end());
+
+	std::stringstream in1(typev);
+	std::string segment;
+	while(std::getline(in1, segment, ',')) {
+		types.push_back(segment);
+	}
+
+	std::stringstream in2(entityv);
+	while(std::getline(in2, segment, ',')) {
+		newentities.push_back(segment);
+	}
 }

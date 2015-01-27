@@ -62,6 +62,13 @@ public:
 	bool isSelected;
 };
 
+class TransformOnBiome : public artemis::Component {
+public:
+	TransformOnBiome( std::string typev, std::string entityv );
+	static artemis::Component *CreateFromAttributes( AttributeList &att );
+	std::vector<std::string> types, newentities;
+};
+
 class UITag : public Tag { };
 
 class TerrainNodeTag : public Tag { };
