@@ -8,16 +8,20 @@ void CameraSystem::doProcessing () {
 	// Movement acc/decceleration
 	dtheta *= 0.98;
 	dgamma *= 0.98;
+	
+	// Disable movement acc/decceleration
+	dtheta = 0;
+	dgamma = 0;
 
 	// Update camera
-	float fact = 0.07*world->getDelta()/2.0f;
-	if(sf::Keyboard::isKeyPressed(sf::Keyboard::Right))
+	float fact = 3*world->getDelta()/2.0f;
+	if(sf::Keyboard::isKeyPressed(sf::Keyboard::Right) || game.LocalMousePosition().x > game.Renderer()->getSize().x-2)
 		dgamma -= fact;
-	if(sf::Keyboard::isKeyPressed(sf::Keyboard::Left))
+	if(sf::Keyboard::isKeyPressed(sf::Keyboard::Left) || game.LocalMousePosition().x < 2)
 		dgamma += fact;
-	if(sf::Keyboard::isKeyPressed(sf::Keyboard::Up))
+	if(sf::Keyboard::isKeyPressed(sf::Keyboard::Up) || game.LocalMousePosition().y < 2)
 		dtheta += fact;
-	if(sf::Keyboard::isKeyPressed(sf::Keyboard::Down))
+	if(sf::Keyboard::isKeyPressed(sf::Keyboard::Down) || game.LocalMousePosition().y > game.Renderer()->getSize().y-2)
 		dtheta -= fact;
 
 	// Update matrices
@@ -34,7 +38,7 @@ void CameraSystem::doProcessing () {
 }
 
 void CameraSystem::initialize () {
-	dtheta=dgamma=0.0f;
-	worldtransform.identity();
+	dtheta=dgamma=0.1f;
+	worldtransform.setupRotate(1, M_PI/2); // Camera starting angle
 	sun.setupLocalToParent( Vector3(0, 0, 0), EulerAngles(0.3, 1.8, 0) );
 }

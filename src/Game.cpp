@@ -25,7 +25,7 @@ void Game::Initialize() {
 
 	// Create all systems
 	cameraSys =
-		(CameraSystem*)sm->setSystem(new CameraSystem());
+		(CameraSystem*)sm->setSystem(new CameraSystem(*this));
 
 	terrainRenderSys =
 		(BackgroundTerrainRenderSystem*)sm->setSystem(new BackgroundTerrainRenderSystem(*this));

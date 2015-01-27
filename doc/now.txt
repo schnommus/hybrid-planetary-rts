@@ -1,3 +1,3 @@
--Selection class
+-Selection class *DONE*
 -Better UI rendering -> Just a UI tag interacting with flat position
 -DRAW ORDERING *Implemented with Y-ordering. Still have to add parameter to UVComponent or similar*

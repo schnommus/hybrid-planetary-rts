@@ -17,6 +17,7 @@ void SelectionSystem::initialize() {
 }
 
 void SelectionSystem::doProcessing() {
+	// Loop selection logic
 	if( sf::Mouse::isButtonPressed( sf::Mouse::Left) ) {
 		if( loopSelecting == false ) {
 			loopSelecting = true;
@@ -32,12 +33,15 @@ void SelectionSystem::doProcessing() {
 		sf::Vector2i mpos = game.LocalMousePosition();
 		for( int i = 0; i != world->getEntityManager()->getTotalCreated(); ++i ) {
 			if( &world->getEntity(i) != nullptr ) {
+				// For every selectable entity
 				if( &FetchComponent<SelectableComponent>(world->getEntity(i)) != nullptr ) {
 					UVPositionComponent &pos = FetchComponent<UVPositionComponent>(world->getEntity(i));
 					if( pos.on_screen ) {
+						//Click selection
 						if( sqrt( (pos.screen_x-mpos.x)*(pos.screen_x-mpos.x) + (pos.screen_y-mpos.y)*(pos.screen_y-mpos.y) ) < 10 ) {
 							FetchComponent<SelectableComponent>(world->getEntity(i)).isSelected = true;
 							selectedEntities.push_back(&world->getEntity(i));
+						//Loop selection
 						} else if (loopSelecting && isInsideRectangle( pos.screen_x, pos.screen_y, boxOrigin.x, boxOrigin.y, game.LocalMousePosition().x, game.LocalMousePosition().y )) {
 							FetchComponent<SelectableComponent>(world->getEntity(i)).isSelected = true;
 							selectedEntities.push_back(&world->getEntity(i));
@@ -65,6 +69,7 @@ void SelectionSystem::drawUnder() {
 }
 
 void SelectionSystem::drawOver() {
+	// Loop selection box
 	if( loopSelecting ) {
 		sf::VertexArray a;
 		a.setPrimitiveType(sf::LinesStrip);
@@ -76,7 +81,8 @@ void SelectionSystem::drawOver() {
 
 		game.Renderer()->draw(a);
 	}
-
+	
+	// Selection description text
 	if( selectedEntities.empty() ) {
 		desc.setString("Nothing selected");
 	} else if ( selectedEntities.size() == 1 ) {
@@ -86,15 +92,31 @@ void SelectionSystem::drawOver() {
 		oss << selectedEntities.size() << " selected";
 		desc.setString(oss.str());
 	}
+	
+	// Preview images above description text
+	for( int i = 0; i != selectedEntities.size(); ++i ) {
+		SpriteComponent &s = FetchComponent<SpriteComponent>(*selectedEntities[i]);
+		sf::Sprite preview = s.sprite;
+		preview.setPosition(177+10*i, 218);
+		sf::RectangleShape rect( sf::Vector2f( preview.getLocalBounds().width+4, preview.getLocalBounds().height+4 ) );
+		rect.setPosition(177+10*i-(preview.getLocalBounds().width+4)/2-s.offset_x, 218-(preview.getLocalBounds().height+4)/2-s.offset_y);
+		rect.setOutlineColor( sf::Color::Black );
+		rect.setOutlineThickness( 1.0f );
+		game.Renderer()->draw(rect);
+		game.Renderer()->draw(preview);
+	}
 
 	desc.setPosition(168, 227);
 	game.Renderer()->draw(desc);
 }
 
 bool SelectionSystem::isInsideRectangle( int x, int y, int x1, int y1, int x2, int y2 ) {
-	if( y1 < y2 && x1 < x2 && x > x1 && x < x2 && y > y1 && y < y2) return true;
-	if( y1 > y2 && x1 > x2 && x < x1 && x > x2 && y < y1 && y > y2) return true;
-	if( y1 < y2 && x1 > x2 && x < x1 && x > x2 && y > y1 && y < y2) return true;
-	if( y1 > y2 && x1 < x2 && x > x1 && x < x2 && y < y1 && y > y2) return true;
+	if (
+	( y1 < y2 && x1 < x2 && x > x1 && x < x2 && y > y1 && y < y2) ||
+	( y1 > y2 && x1 > x2 && x < x1 && x > x2 && y < y1 && y > y2) ||
+	( y1 < y2 && x1 > x2 && x < x1 && x > x2 && y > y1 && y < y2) ||
+	( y1 > y2 && x1 < x2 && x > x1 && x < x2 && y < y1 && y > y2)
+	) return true;
+
 	return false;
 }
