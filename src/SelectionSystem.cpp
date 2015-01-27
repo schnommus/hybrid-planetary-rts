@@ -41,11 +41,13 @@ void SelectionSystem::doProcessing() {
 						//Click selection
 						if( sqrt( (pos.screen_x-mpos.x)*(pos.screen_x-mpos.x) + (pos.screen_y-mpos.y)*(pos.screen_y-mpos.y) ) < 10 ) {
 							FetchComponent<SelectableComponent>(world->getEntity(i)).isSelected = true;
-							selectedEntities.push_back(&world->getEntity(i));
+							if( std::find( selectedEntities.begin(), selectedEntities.end(), &world->getEntity(i) ) == selectedEntities.end() )
+								selectedEntities.push_back(&world->getEntity(i));
 						//Loop selection
 						} else if (loopSelecting && isInsideRectangle( pos.screen_x, pos.screen_y, boxOrigin.x, boxOrigin.y, game.LocalMousePosition().x, game.LocalMousePosition().y )) {
 							FetchComponent<SelectableComponent>(world->getEntity(i)).isSelected = true;
-							selectedEntities.push_back(&world->getEntity(i));
+							if( std::find( selectedEntities.begin(), selectedEntities.end(), &world->getEntity(i) ) == selectedEntities.end() )
+								selectedEntities.push_back(&world->getEntity(i));
 						} else {
 							FetchComponent<SelectableComponent>(world->getEntity(i)).isSelected = false;
 						}
