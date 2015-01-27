@@ -91,6 +91,127 @@ Low T, High P; Gassy; either giant or methane lakes etc
 -Perhaps scatter the archetypes of amino generators (randomly) across the map at the beginning; hidden in artefacts (archives)
 -Amino generators will only function when planetoid has an appropriate habitat for the relevant units that are being created.
 
+Terrain Changing:
+TerrainNodes have a TerraformingID; which is what is loaded from a level description
+(alternatively; index numbers from entity type; easier, can still use level editor)
+The terraformingID is used to index the actual SpriteComponent so
+TerrainNodes will now have a SetTerraformingID function and an UpdateToCurrentBiome function
+Whenever biome changes; update ALL UpdateToCurrentBiome; then RecalculateTerrain.
+
+OR BETTER
+
+Introduce <transform_on_biome type='icy' newentity='icytree'> tag
+which can also be used for terrain nodes! :D
+Then recalculateTerrain etc.
+All called by BiomeManager etc.
+i.e <transform_on_biome type='arid' newentity='terrain_desert1'>
+
+<Gas>		<Sulfuric>
+       <water>
+<Ice><temperate><tropical>
+       <arid>
+<Barren>	<Mineral>
 
 
+BASE TEXTURES
+temperate:
+1: Deep Water
+2: Shallow water
+3: Deep ice
+4: Icy ground
+5: Desert
+6: Rocky Desert
+7: Wavy Desert (Tile align with shallow water)
+8: Patchy grass
+9: Light grass
+10: Heavy grass
 
+Ice:
+1: Icy lake
+2: Icy ground
+3: Crystalline ice
+4: Deep ice
+5: Icy ground
+6: Slightly more icy ground
+7: Icy ground
+8: Iced grass patchy
+9: Iced grass light
+10: Iced grass heavy
+
+Arid:
+1: Shallow water
+2: Wavy desert
+3: Icy gound
+4: Rocky desert
+5: Desert
+6: Rocky desert
+7: Wavy desert
+8: Dead grass patchy
+9: Dead grass light
+10: Dead grass heavy
+
+Tropical:
+1: Shallow water
+2: Wavy desert
+3: Icy ground
+4: Patchy grass
+5: Patchy grass
+6: Light grass
+7: Patchy grass
+8: Light grass
+9: Heavy grass
+10: Rainforest floor-ish
+
+Water:
+1: Really deep water
+2: Deep water
+3: Icy ground
+4: Shallow water
+5: Shallow water
+6: Deep water
+7: Shallow water
+8: Shallow water
+9: Deep water
+10: Wavy desert
+
+Sulfuric:
+1: Red water
+2: Yellow water (shallow'er)
+3: Wavy desert
+4: Red rock light
+5: Red rock light
+6: Red rock heavy
+7: Red rock light
+8: Red rock light
+9: Red rock heavy
+10: Blackened rocks
+
+Gas:
+1: Gaseous swirls
+2: Gaseous lines
+3: Gaseous swirls 2
+4: Gaseos lines 2
+5: Gaseous lines
+6: Gaseous lines
+7: Gaseous lines
+8: Gaseous lines
+9: Gaseous lines
+10: Liquid pocket
+
+Mineral:
+1: Precious gems 1
+2: Moondirt
+3: Ground crystals
+4: Precious gems 2
+5: Moondirt
+6: Precious gems 2
+7: Moondirt with marks
+8: Moondirt
+9: Precious gems 1
+10: Precious gems 3
+
+Barren:
+1: Moonrocks 1
+2: Moonrocks 2
+3: Moondirt 1..
+10: Moondirt with marks
