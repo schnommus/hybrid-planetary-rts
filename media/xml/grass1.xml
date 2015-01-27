@@ -1,0 +1,5 @@
+<entity type_name='grass1'>
+	<sprite_component file_name='GrassObject.png' animation_frames='1' offset_y='-16'/>
+	<minimap_tag/>
+	<uv_position_component/>
+</entity>
