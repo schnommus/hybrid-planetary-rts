@@ -23,4 +23,5 @@ private:
 	std::vector< artemis::Entity * > selectedEntities;
 	sf::Vector2i boxOrigin;
 	bool loopSelecting;
+	sf::Sprite cursor;
 };

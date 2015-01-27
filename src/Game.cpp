@@ -20,6 +20,7 @@ void Game::Initialize() {
 	
 	// SFML rendering devices
 	realwindow = new sf::RenderWindow(sf::VideoMode(1280, 720), "GamePrototype", sf::Style::Default );
+	realwindow->setMouseCursorVisible(false);
 	window = new sf::RenderTexture();
 	window->create(427, 240);
 

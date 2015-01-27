@@ -14,6 +14,7 @@ void SelectionSystem::initialize() {
 	desc.setFont( ResourceManager::Inst().GetFont("RiskofRainFont.ttf") );
 	desc.setCharacterSize(8);
 	loopSelecting = false;
+	cursor.setTexture( ResourceManager::Inst().GetTexture("cursor.png") );
 }
 
 void SelectionSystem::doProcessing() {
@@ -108,6 +109,9 @@ void SelectionSystem::drawOver() {
 
 	desc.setPosition(168, 227);
 	game.Renderer()->draw(desc);
+
+	cursor.setPosition( game.LocalMousePosition().x, game.LocalMousePosition().y );
+	game.Renderer()->draw(cursor);
 }
 
 bool SelectionSystem::isInsideRectangle( int x, int y, int x1, int y1, int x2, int y2 ) {
