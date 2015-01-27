@@ -12,6 +12,7 @@ class MinimapSphericalRenderSystem;
 class DrawDebugInfoSystem;
 class UIRenderSystem;
 class SelectionSystem;
+class BiomeSystem;
 
 class Game {
 public:
@@ -55,4 +56,5 @@ private:
 	DrawDebugInfoSystem *fpsSys;
 	UIRenderSystem *uiSys;
 	SelectionSystem *selectionSys;
+	BiomeSystem *biomeSys;
 };

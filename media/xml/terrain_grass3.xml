@@ -1,5 +1,6 @@
 <entity type_name='terrain_grass3'>
 	<sprite_component file_name='Grass3.png'/>
+	<transform_on_biome type='icy' newentity='terrain_icygrass3'/>
 	<minimap_tag/>
 	<terrain_node_tag/>
 	<uv_position_component/>

@@ -10,6 +10,7 @@
 #include "EntityFactory.h"
 #include "ResourceManager.h"
 #include "SelectionSystem.h"
+#include "BiomeSystem.h"
 
 #include <fstream>
 #include <sstream>
@@ -52,6 +53,9 @@ void Game::Initialize() {
 	selectionSys = 
 		(SelectionSystem*)sm->setSystem(new SelectionSystem(*this));
 
+	biomeSys =
+		(BiomeSystem*)sm->setSystem(new BiomeSystem(*this));
+
 	sm->initializeAll();
 }
 
@@ -76,6 +80,8 @@ void Game::Run() {
 
 
 		Renderer()->clear(sf::Color(66, 55, 42));
+
+		biomeSys->process();
 
 		cameraSys->process();
 
