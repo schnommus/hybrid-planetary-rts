@@ -105,6 +105,19 @@ which can also be used for terrain nodes! :D
 Then recalculateTerrain etc.
 All called by BiomeManager etc.
 i.e <transform_on_biome type='arid' newentity='terrain_desert1'>
+This works good for i.e gas planet. But there is the possibility of preserving state by having 10 types per state; just numbered differently; with different relationships. 
+
+Relationships:
+Temperate -> Water, Ice, Tropical, Arid
+Tropical -> Water, Temperate, Arid, Sulfuric, Mineral
+Water -> Gas, Sulfuric, Ice, Tropical, Temperate
+Arid-> Barren, Mineral, Ice, Temperate, Tropical
+Ice-> Water, Temperate, Arid, Gas, Barren
+Gas-> Water, Ice
+Sulfuric-> Water, Tropical
+Mineral-> Arid, Tropical
+Barren-> Arid, Ice
+
 
 <Gas>		<Sulfuric>
        <water>
