@@ -1,5 +1,5 @@
 <entity type_name='terrain_water2'>
-	<sprite_component file_name='Water2.png' animation_frames='12'/>
+	<sprite_component file_name='Water2.png' animation_frames='3' animation_speed='0.25'/>
 	<transform_on_biome type='icy' newentity='terrain_snow2'/>
 	<minimap_tag/>
 	<terrain_node_tag/>

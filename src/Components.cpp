@@ -37,8 +37,8 @@ artemis::Component * FlatPositionComponent::CreateFromAttributes( AttributeList 
 }
 
 
-SpriteComponent::SpriteComponent (std::string name, float scale, int frames, int offset_xv, int offset_yv)
-	: nFrames (frames), offset_x(offset_xv), offset_y(offset_yv) {
+SpriteComponent::SpriteComponent (std::string name, float scale, int frames, int offset_xv, int offset_yv, float animation_speedv )
+	: nFrames (frames), offset_x(offset_xv), offset_y(offset_yv), animation_speed(animation_speedv) {
 	sprite.setTexture( ResourceManager::Inst().GetTexture(name) );
 	sprite.setTextureRect( sf::IntRect((rand()%nFrames)*sprite.getLocalBounds().width/frames, 0, sprite.getLocalBounds().width/frames, sprite.getLocalBounds().height ) );
 	sprite.setScale(scale, scale);
@@ -47,7 +47,7 @@ SpriteComponent::SpriteComponent (std::string name, float scale, int frames, int
 
 
 void SpriteComponent::UpdateAnimation () {
-	if(  nFrames != 1 && frameClock.getElapsedTime().asSeconds() > 0.1f ) {
+	if(  nFrames != 1 && frameClock.getElapsedTime().asSeconds() > (0.1f/animation_speed) ) {
 		frameClock.restart();
 
 		int x = sprite.getTextureRect().left;
@@ -60,7 +60,7 @@ void SpriteComponent::UpdateAnimation () {
 }
 
 artemis::Component *SpriteComponent::CreateFromAttributes( AttributeList &att ) {
-	return new SpriteComponent( att.String("file_name", "point.png"), att.Float("scale", 1.0f), att.Int("animation_frames", 1), att.Int("offset_x", 0), att.Int("offset_y", 0));
+	return new SpriteComponent( att.String("file_name", "point.png"), att.Float("scale", 1.0f), att.Int("animation_frames", 1), att.Int("offset_x", 0), att.Int("offset_y", 0), att.Float("animation_speed", 1.0f));
 }
 
 artemis::Component * NameComponent::CreateFromAttributes( AttributeList &att ) {
