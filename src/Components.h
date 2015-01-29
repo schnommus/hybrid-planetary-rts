@@ -41,7 +41,8 @@ public:
 	sf::Clock frameClock;
 	int nFrames;
 	int offset_x, offset_y;
-	SpriteComponent (std::string name, float scale = 1.0f, int frames = 1, int offset_xv=0, int offset_yv=0);
+	float animation_speed;
+	SpriteComponent (std::string name, float scale = 1.0f, int frames = 1, int offset_xv=0, int offset_yv=0, float animation_speedv=1.0f);
 	void UpdateAnimation ();
 	static artemis::Component *CreateFromAttributes( AttributeList &att );
 	sf::Texture texture;
