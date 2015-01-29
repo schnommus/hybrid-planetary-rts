@@ -100,16 +100,16 @@ void SelectionSystem::drawOver() {
 	for( int i = 0; i != selectedEntities.size(); ++i ) {
 		SpriteComponent &s = FetchComponent<SpriteComponent>(*selectedEntities[i]);
 		sf::Sprite preview = s.sprite;
-		preview.setPosition(177+10*i, 218);
+		preview.setPosition(187+10*i, 218);
 		sf::RectangleShape rect( sf::Vector2f( preview.getLocalBounds().width+4, preview.getLocalBounds().height+4 ) );
-		rect.setPosition(177+10*i-(preview.getLocalBounds().width+4)/2-s.offset_x, 218-(preview.getLocalBounds().height+4)/2-s.offset_y);
+		rect.setPosition(187+10*i-(preview.getLocalBounds().width+4)/2-s.offset_x, 218-(preview.getLocalBounds().height+4)/2-s.offset_y);
 		rect.setOutlineColor( sf::Color::Black );
 		rect.setOutlineThickness( 1.0f );
 		game.Renderer()->draw(rect);
 		game.Renderer()->draw(preview);
 	}
 
-	desc.setPosition(168, 227);
+	desc.setPosition(178, 227);
 	game.Renderer()->draw(desc);
 
 	cursor.setPosition( game.LocalMousePosition().x, game.LocalMousePosition().y );

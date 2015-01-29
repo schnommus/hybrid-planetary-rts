@@ -101,6 +101,8 @@ void Game::Run() {
 
 		fpsSys->process();
 
+		biomeSys->DrawBiomeInfo();
+
 		if( levelEditorEnabled ) {
 			levelEditorSys->process();
 		}
