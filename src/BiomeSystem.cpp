@@ -75,7 +75,7 @@ void BiomeSystem::DoBiomeChecks() {
 	else if( 0 < theta && theta < 90) SetBiome("sulfuric");
 	else if( 90 < theta && theta < 180) SetBiome("gas");
 	else if( -90 < theta && theta < 0 ) SetBiome("mineral");
-	else if( -180 < theta && theta < -90 ) SetBiome("sulfuric");
+	else if( -180 < theta && theta < -90 ) SetBiome("barren");
 }
 
 void BiomeSystem::DrawBiomeInfo() {
