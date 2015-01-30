@@ -126,3 +126,7 @@ bool SelectionSystem::isInsideRectangle( int x, int y, int x1, int y1, int x2, i
 
 	return false;
 }
+
+std::vector< artemis::Entity * > SelectionSystem::SelectedEntities() {
+	return selectedEntities;
+}

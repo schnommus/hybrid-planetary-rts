@@ -13,6 +13,7 @@ artemis::Component *ComponentFromDescriptor( ComponentDescriptor & desc ) {
 	register_component("name_tag", NameComponent);
 	register_component("selectable_component", SelectableComponent);
 	register_component("transform_on_biome", TransformOnBiome);
+	register_component("move_component", MoveComponent );
 	register_tag("ui_tag", UITag);
 	register_tag("minimap_tag", MinimapTag);
 	register_tag("terrain_node_tag", TerrainNodeTag);
@@ -89,4 +90,8 @@ TransformOnBiome::TransformOnBiome( std::string typev, std::string entityv ) {
 	while(std::getline(in2, segment, ',')) {
 		newentities.push_back(segment);
 	}
+}
+
+artemis::Component * MoveComponent::CreateFromAttributes( AttributeList &att ) {
+	return new MoveComponent( att.Float("speed", 1.0f) );
 }

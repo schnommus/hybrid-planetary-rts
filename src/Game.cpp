@@ -11,6 +11,7 @@
 #include "ResourceManager.h"
 #include "SelectionSystem.h"
 #include "BiomeSystem.h"
+#include "CommandSystem.h"
 
 #include <fstream>
 #include <sstream>
@@ -56,6 +57,9 @@ void Game::Initialize() {
 	biomeSys =
 		(BiomeSystem*)sm->setSystem(new BiomeSystem(*this));
 
+	commandSys =
+		(CommandSystem*)sm->setSystem(new CommandSystem(*this));
+
 	sm->initializeAll();
 }
 
@@ -89,6 +93,7 @@ void Game::Run() {
 
 		selectionSys->process();
 		selectionSys->drawUnder();
+		commandSys->process();
 
 		uvRenderSys->process();
 

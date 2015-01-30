@@ -11,8 +11,9 @@ class LevelEditorSystem;
 class MinimapSphericalRenderSystem;
 class DrawDebugInfoSystem;
 class UIRenderSystem;
-class SelectionSystem;
 class BiomeSystem;
+class SelectionSystem;
+class CommandSystem;
 
 class Game {
 public:
@@ -30,6 +31,7 @@ public:
 	bool LevelEditorEnabled() const { return levelEditorEnabled; }
 
 	CameraSystem * Camera() { return cameraSys; }
+	SelectionSystem * Selection() {return selectionSys;}
 	XMLEntityFactory * EntityFactory() { return entFactory; }
 	sf::RenderTexture * Renderer() { return window; }
 	
@@ -57,4 +59,5 @@ private:
 	UIRenderSystem *uiSys;
 	SelectionSystem *selectionSys;
 	BiomeSystem *biomeSys;
+	CommandSystem *commandSys;
 };

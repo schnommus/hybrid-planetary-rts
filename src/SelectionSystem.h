@@ -13,6 +13,7 @@ public:
 	SelectionSystem(Game &gamev);
 	void drawUnder();
 	void drawOver();
+	std::vector< artemis::Entity * > SelectedEntities();
 protected:
 	virtual void initialize();
 	virtual void doProcessing();
