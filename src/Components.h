@@ -70,6 +70,17 @@ public:
 	std::vector<std::string> types, newentities;
 };
 
+class MoveComponent : public artemis::Component {
+public:
+	MoveComponent( float speedv = 1.0f )
+		: speed(speedv), isMoving(false) { }
+	void Initiate( sf::Vector2f targetv ) { target=targetv; isMoving=true; }
+	static artemis::Component *CreateFromAttributes( AttributeList &att );
+	float speed;
+	bool isMoving;
+	sf::Vector2f target;
+};
+
 class UITag : public Tag { };
 
 class TerrainNodeTag : public Tag { };

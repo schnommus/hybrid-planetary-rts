@@ -90,6 +90,7 @@
   <ItemGroup>
     <ClCompile Include="..\src\BiomeSystem.cpp" />
     <ClCompile Include="..\src\CameraSystem.cpp" />
+    <ClCompile Include="..\src\CommandSystem.cpp" />
     <ClCompile Include="..\src\Components.cpp" />
     <ClCompile Include="..\src\DebugSystems.cpp" />
     <ClCompile Include="..\src\EntityFactory.cpp" />
@@ -110,6 +111,7 @@
   <ItemGroup>
     <ClInclude Include="..\src\BiomeSystem.h" />
     <ClInclude Include="..\src\CameraSystem.h" />
+    <ClInclude Include="..\src\CommandSystem.h" />
     <ClInclude Include="..\src\Components.h" />
     <ClInclude Include="..\src\DebugSystems.h" />
     <ClInclude Include="..\src\EntityFactory.h" />
