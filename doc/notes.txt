@@ -1,4 +1,10 @@
 TOP:
+- Reduce size of all entities to give impression of much larger game world (+render more of everything)
+- This would also make art generation much easier while improving the game aesthetic
+- Nice pathfinding algorithm (i.e flowfield)
+
+
+
 - Will need an entity deletion queue at some point
 - file-mapped resource fetcher system *DONE*
 - xml type system *DONE*
