@@ -79,6 +79,7 @@ public:
 	float speed;
 	bool isMoving;
 	sf::Vector2f target;
+	sf::Vector2f velocity;
 };
 
 class UITag : public Tag { };

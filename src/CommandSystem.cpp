@@ -30,11 +30,34 @@ void CommandSystem::doProcessing() {
 			MoveComponent *m = &FetchComponent<MoveComponent>(world->getEntity(i));
 			if( m != nullptr ) {
 				if( m->isMoving ) {
-					if( abs( FetchComponent<UVPositionComponent>(world->getEntity(i)).u-m->target.x ) < 0.001f && abs( FetchComponent<UVPositionComponent>(world->getEntity(i)).v-m->target.y ) ) {
+					if( abs( FetchComponent<UVPositionComponent>(world->getEntity(i)).u-m->target.x ) < 0.003f && abs( FetchComponent<UVPositionComponent>(world->getEntity(i)).v-m->target.y ) < 0.003f ) {
 						m->isMoving = false;
 					}
-					FetchComponent<UVPositionComponent>(world->getEntity(i)).u -= 3*world->getDelta()*(FetchComponent<UVPositionComponent>(world->getEntity(i)).u-m->target.x);
-					FetchComponent<UVPositionComponent>(world->getEntity(i)).v -= 3*world->getDelta()*(FetchComponent<UVPositionComponent>(world->getEntity(i)).v-m->target.y);
+					UVPositionComponent &myPos = FetchComponent<UVPositionComponent>(world->getEntity(i));
+					
+					sf::Vector2f uv = m->target;
+					float d = abs(uv.x-myPos.u); //conventional
+					float d2;
+					if( uv.x < myPos.u ) {
+						d2 = abs( 2+uv.x-myPos.u ); d2 = (d2>2.0f?d2-2.0f:d2); //wrapped
+					} else {
+						d2 = abs( 2+myPos.u-uv.x ); d2 = (d2>2.0f?d2-2.0f:d2); //wrapped
+					}
+					if( d2 < d ) {
+						float theta = atan2( (uv.y-myPos.v), (uv.x-myPos.u) );
+						m->velocity.x = -cos(theta);
+						m->velocity.y = sin(theta);
+					} else {
+						float theta = atan2( (uv.y-myPos.v), (uv.x-myPos.u) );
+						m->velocity.x = cos(theta);
+						m->velocity.y = sin(theta);
+					}
+
+					if( myPos.u <= -1.0f) myPos.u = 0.999f;
+					if( myPos.u >= 1.0f) myPos.u = -0.999f;
+					myPos.u += 0.08*world->getDelta()*m->velocity.x;
+					myPos.v += 0.08*world->getDelta()*m->velocity.y;
+					myPos.u += abs( asin(4.0f*myPos.v-1.0f) )*0.30*world->getDelta()*m->velocity.x;
 				}
 			}
 		}
@@ -67,6 +90,7 @@ void CommandSystem::PerformAction() {
 			float z = sqrt( sz*sz-x*x-y*y );
 			sf::Vector2f uv = ReverseUVTransform( Vector3(x2, y2, z), sz, game.Camera()->worldtransform );
 			FetchComponent<MoveComponent>(*selected[i]).Initiate( sf::Vector2f( uv.x, uv.y ) );
+
 			++numTargeted;
 			if( numTargeted == 5) {
 				numTargeted = 0;

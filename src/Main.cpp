@@ -7,6 +7,6 @@ int main(int argc, char **argv) {
 	g.LoadLevel();
 	//g.EnableLevelEditor();
 	g.Run();
-	g.SaveLevel();
+	//g.SaveLevel();
     return 0;
 }

@@ -1,6 +1,5 @@
 <entity type_name='plant1'>
 	<sprite_component file_name='Plant1.png' offset_y='5'/>
-	<move_component speed='1'/>
 	<selectable_component description='Wide-leafed Succulent'/>
 	<minimap_tag/>
 	<uv_position_component/>
