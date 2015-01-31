@@ -42,17 +42,36 @@ void CommandSystem::doProcessing() {
 }
 
 void CommandSystem::PerformAction() {
-	std::cout << "CommandSystem::PerformAction()!" << std::endl;
+	// Get mouse position in world
+	sf::Vector2i pos = game.LocalMousePosition();
+	float x = pos.x, y = pos.y, sz=500.0f;
+	x -= game.Renderer()->getSize().x/2;
+	y -= game.Renderer()->getSize().y/2;
+
+	// Count entities to be moved
 	auto &selected = game.Selection()->SelectedEntities();
+	int totalMoving = 0;
 	for( int i = 0; i != selected.size(); ++i ) {
-		sf::Vector2i pos = game.LocalMousePosition();
-		float x = pos.x, y = pos.y, sz=500.0f;
-		x -= game.Renderer()->getSize().x/2;
-		y -= game.Renderer()->getSize().y/2;
-		float z = sqrt( sz*sz-x*x-y*y );
-		sf::Vector2f uv = ReverseUVTransform( Vector3(x, y, z), sz, game.Camera()->worldtransform );
 		if( &FetchComponent<MoveComponent>(*selected[i]) != nullptr ) {
-			FetchComponent<MoveComponent>(*selected[i]).Initiate( uv );
+			++totalMoving;
+		}
+	}
+
+	// Move them
+	int numTargeted = 0; // These two variables for grid formation
+	int newRow = 0;
+	for( int i = 0; i != selected.size(); ++i ) {
+		if( &FetchComponent<MoveComponent>(*selected[i]) != nullptr ) {
+			float x2 = x+15*(numTargeted-(totalMoving>4?3:totalMoving/2));
+			float y2 = y+ 15*(newRow-totalMoving/12);
+			float z = sqrt( sz*sz-x*x-y*y );
+			sf::Vector2f uv = ReverseUVTransform( Vector3(x2, y2, z), sz, game.Camera()->worldtransform );
+			FetchComponent<MoveComponent>(*selected[i]).Initiate( sf::Vector2f( uv.x, uv.y ) );
+			++numTargeted;
+			if( numTargeted == 5) {
+				numTargeted = 0;
+				++newRow;
+			}
 		}
 	}
 }
