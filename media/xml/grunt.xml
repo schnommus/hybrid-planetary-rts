@@ -1,0 +1,7 @@
+<entity type_name='sentinel'>
+	<sprite_component file_name='grunt_shoot.png' animation_frames='5' animation_speed='2.0' offset_y='6'offset_x='-2'/>
+	<move_component speed='1'/>
+	<selectable_component description='Sentinal'/>
+	<minimap_tag/>
+	<uv_position_component/>
+</entity>
