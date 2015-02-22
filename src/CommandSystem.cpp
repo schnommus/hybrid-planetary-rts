@@ -2,6 +2,7 @@
 
 #include <string>
 #include <sstream>
+#include <cmath>
 #include "Components.h"
 #include "ResourceManager.h"
 #include "SelectionSystem.h"
@@ -17,6 +18,29 @@ CommandSystem::CommandSystem(Game &gamev) : game(gamev), rmbDown(false) {
 void CommandSystem::initialize() {
 }
 
+
+double wrap_pi( double angle ) {
+	angle += M_PI;
+	double twoPi = 2.0 * M_PI;
+	return angle - twoPi * floor( angle / twoPi ) - M_PI;
+}
+
+float lerpAngle(float u, float v, float p) {
+	return wrap_pi(u) + p*wrap_pi(wrap_pi(v) - wrap_pi(u));
+}
+
+double nth_root(double x, int n){
+	if (!(n%2) || x<0){
+		std::cout << "Bad Nth Root!";
+	}
+
+	bool sign = (x >= 0);
+
+	x = exp(log(abs(x))/n);
+
+	return sign ? x : -x;
+}
+
 void CommandSystem::doProcessing() {
 	if( !rmbDown && sf::Mouse::isButtonPressed(sf::Mouse::Right) ) {
 		rmbDown = true;
@@ -30,34 +54,23 @@ void CommandSystem::doProcessing() {
 			MoveComponent *m = &FetchComponent<MoveComponent>(world->getEntity(i));
 			if( m != nullptr ) {
 				if( m->isMoving ) {
-					if( abs( FetchComponent<UVPositionComponent>(world->getEntity(i)).u-m->target.x ) < 0.003f && abs( FetchComponent<UVPositionComponent>(world->getEntity(i)).v-m->target.y ) < 0.003f ) {
+					if( m->lerpDelta > 0.999f ) {
 						m->isMoving = false;
 					}
 					UVPositionComponent &myPos = FetchComponent<UVPositionComponent>(world->getEntity(i));
 					
 					sf::Vector2f uv = m->target;
-					float d = abs(uv.x-myPos.u); //conventional
-					float d2;
-					if( uv.x < myPos.u ) {
-						d2 = abs( 2+uv.x-myPos.u ); d2 = (d2>2.0f?d2-2.0f:d2); //wrapped
-					} else {
-						d2 = abs( 2+myPos.u-uv.x ); d2 = (d2>2.0f?d2-2.0f:d2); //wrapped
-					}
-					if( d2 < d ) {
-						float theta = atan2( (uv.y-myPos.v), (uv.x-myPos.u) );
-						m->velocity.x = -cos(theta);
-						m->velocity.y = sin(theta);
-					} else {
-						float theta = atan2( (uv.y-myPos.v), (uv.x-myPos.u) );
-						m->velocity.x = cos(theta);
-						m->velocity.y = sin(theta);
-					}
+					
+					float accelDelta = m->lerpDelta;
 
-					if( myPos.u <= -1.0f) myPos.u = 0.999f;
-					if( myPos.u >= 1.0f) myPos.u = -0.999f;
-					myPos.u += 0.08*world->getDelta()*m->velocity.x;
-					myPos.v += 0.08*world->getDelta()*m->velocity.y;
-					myPos.u += abs( asin(4.0f*myPos.v-1.0f) )*0.30*world->getDelta()*m->velocity.x;
+					myPos.u = lerpAngle( M_PI*m->startingPosition.x, M_PI*uv.x, accelDelta )/M_PI;
+					myPos.v = lerpAngle( M_PI*m->startingPosition.y, M_PI*uv.y, accelDelta )/M_PI;
+
+
+					float d_u = abs( lerpAngle( M_PI*m->startingPosition.x, M_PI*uv.x, 0.01f )/M_PI-lerpAngle( M_PI*m->startingPosition.x, M_PI*uv.x, 0.0f )/M_PI );
+					float d_v = abs( lerpAngle( M_PI*m->startingPosition.y, M_PI*uv.y, 0.01f )/M_PI-lerpAngle( M_PI*m->startingPosition.y, M_PI*uv.y, 0.0f )/M_PI );
+					float d_uv = 1.0f/sqrt( d_u*d_u + d_v*d_v );
+					m->lerpDelta += world->getDelta()*d_uv/2000.0f*m->speed;
 				}
 			}
 		}
@@ -89,7 +102,8 @@ void CommandSystem::PerformAction() {
 			float y2 = y+ 15*(newRow-totalMoving/12);
 			float z = sqrt( sz*sz-x*x-y*y );
 			sf::Vector2f uv = ReverseUVTransform( Vector3(x2, y2, z), sz, game.Camera()->worldtransform );
-			FetchComponent<MoveComponent>(*selected[i]).Initiate( sf::Vector2f( uv.x, uv.y ) );
+			UVPositionComponent &myPos = FetchComponent<UVPositionComponent>(*selected[i]);
+			FetchComponent<MoveComponent>(*selected[i]).Initiate( sf::Vector2f( uv.x, uv.y ), sf::Vector2f(myPos.u, myPos.v) );
 
 			++numTargeted;
 			if( numTargeted == 5) {
