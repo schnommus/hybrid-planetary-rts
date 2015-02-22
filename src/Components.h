@@ -74,12 +74,13 @@ class MoveComponent : public artemis::Component {
 public:
 	MoveComponent( float speedv = 1.0f )
 		: speed(speedv), isMoving(false) { }
-	void Initiate( sf::Vector2f targetv ) { target=targetv; isMoving=true; }
+	void Initiate( sf::Vector2f targetv, sf::Vector2f myPos ) { target=targetv; isMoving=true; startingPosition=myPos; lerpDelta = 0;}
 	static artemis::Component *CreateFromAttributes( AttributeList &att );
 	float speed;
 	bool isMoving;
 	sf::Vector2f target;
-	sf::Vector2f velocity;
+	sf::Vector2f startingPosition;
+	float lerpDelta;
 };
 
 class UITag : public Tag { };
