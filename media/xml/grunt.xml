@@ -1,6 +1,7 @@
 <entity type_name='sentinel'>
-	<sprite_component file_name='grunt_shoot.png' animation_frames='5' animation_speed='2.0' offset_y='6'offset_x='-2'/>
-	<move_component speed='1'/>
+	<sprite_component file_name='grunt_idle.png' animation_frames='1' animation_speed='2.0' offset_y='6'offset_x='-2'/>
+	<move_component speed='0.5'/>
+	<move_sprite_component file_name='grunt_walk.png' animation_frames='3' animation_speed='1.0' offset_y='6'offset_x='-2'/>
 	<selectable_component description='Sentinal'/>
 	<minimap_tag/>
 	<uv_position_component/>

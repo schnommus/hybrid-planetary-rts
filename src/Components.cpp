@@ -9,6 +9,7 @@
 #define register_tag(s, t) if( desc.type == s ) return new t()
 artemis::Component *ComponentFromDescriptor( ComponentDescriptor & desc ) {
 	register_component("sprite_component", SpriteComponent);
+	register_component("move_sprite_component", MoveSpriteComponent);
 	register_component("flat_position_component", FlatPositionComponent);
 	register_component("name_tag", NameComponent);
 	register_component("selectable_component", SelectableComponent);
@@ -94,4 +95,13 @@ TransformOnBiome::TransformOnBiome( std::string typev, std::string entityv ) {
 
 artemis::Component * MoveComponent::CreateFromAttributes( AttributeList &att ) {
 	return new MoveComponent( att.Float("speed", 1.0f) );
+}
+
+MoveSpriteComponent::MoveSpriteComponent( SpriteComponent *sprite )
+	: movingSpriteComponent(sprite) {
+
+}
+
+artemis::Component * MoveSpriteComponent::CreateFromAttributes( AttributeList &att ) {
+	return new MoveSpriteComponent( (SpriteComponent*)SpriteComponent::CreateFromAttributes(att) );
 }

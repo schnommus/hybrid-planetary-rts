@@ -71,6 +71,16 @@ void CommandSystem::doProcessing() {
 					float d_v = abs( lerpAngle( M_PI*m->startingPosition.y, M_PI*uv.y, 0.01f )/M_PI-lerpAngle( M_PI*m->startingPosition.y, M_PI*uv.y, 0.0f )/M_PI );
 					float d_uv = 1.0f/sqrt( d_u*d_u + d_v*d_v );
 					m->lerpDelta += world->getDelta()*d_uv/2000.0f*m->speed;
+
+					float u1 = lerpAngle( M_PI*m->startingPosition.x, M_PI*uv.x, m->lerpDelta )/M_PI;
+					float v1 = lerpAngle( M_PI*m->startingPosition.y, M_PI*uv.y, m->lerpDelta )/M_PI;
+					Vector3 rotated1 = DoUVTransform( u1, v1, 500.0f, game.Camera()->worldtransform );
+					float u2 = lerpAngle( M_PI*m->startingPosition.x, M_PI*uv.x, m->lerpDelta+0.01f )/M_PI;
+					float v2 = lerpAngle( M_PI*m->startingPosition.y, M_PI*uv.y, m->lerpDelta+0.01f )/M_PI;
+					Vector3 rotated2 = DoUVTransform( u2, v2, 500.0f, game.Camera()->worldtransform );
+
+					if( rotated1.x - rotated2.x > 0.0f) m->movingLeft = true;
+					else m->movingLeft = false;
 				}
 			}
 		}
