@@ -207,9 +207,28 @@ void UVSphericalRenderSystem::processEntity (artemis::Entity & e) {
 	Vector3 rotated = DoUVTransform( uvpos.u, uvpos.v, sz, game.Camera()->worldtransform );
 	Vector3 sunrotated = DoUVTransform( uvpos.u, uvpos.v, sz, game.Camera()->sun);
 
-	spriteMapper.get(e)->UpdateAnimation();
+	SpriteComponent *spriteComponent = spriteMapper.get(e);
 
-	sf::Sprite &s = spriteMapper.get(e)->sprite;
+	// Switch to move sprite if we're moving and it has one
+	if( &FetchComponent<MoveSpriteComponent>(e) != nullptr && &FetchComponent<MoveComponent>(e) != nullptr ) {
+		MoveComponent &moveComponent = FetchComponent<MoveComponent>(e);
+		MoveSpriteComponent &moveSpriteComponent = FetchComponent<MoveSpriteComponent>(e);
+
+		if(moveComponent.isMoving == true) {
+			spriteComponent = moveSpriteComponent.movingSpriteComponent;
+			
+			std::cout << moveComponent.movingLeft << std::endl;
+			if( moveComponent.movingLeft ) {
+				spriteComponent->sprite.setScale(-1.0f, 1.0f);
+			} else {
+				spriteComponent->sprite.setScale(1.0f, 1.0f);
+			}
+		}
+	}
+
+	spriteComponent->UpdateAnimation();
+
+	sf::Sprite &s = spriteComponent->sprite;
 
 	// We fiddle with scale a bit here; so preserve it to re-apply at end
 	sf::Vector2f defaultScale = s.getScale();

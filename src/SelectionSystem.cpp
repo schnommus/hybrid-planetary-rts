@@ -4,6 +4,9 @@
 #include <sstream>
 #include "Components.h"
 #include "ResourceManager.h"
+#include "CameraSystem.h"
+#include "RenderSystem.h"
+#include <../gamemath/vector3.h>
 
 
 SelectionSystem::SelectionSystem(Game &gamev) : game(gamev) {
@@ -66,7 +69,8 @@ void SelectionSystem::drawUnder() {
 		if( !pos.on_screen ) {
 			selectionCircle.setColor(sf::Color(190, 190, 190, 128));
 		}
-		selectionCircle.setPosition(pos.screen_x, pos.screen_y);
+		Vector3 rotated = DoUVTransform( pos.u, pos.v, 500.0f, game.Camera()->worldtransform );
+		selectionCircle.setPosition(rotated.x+game.Renderer()->getSize().x/2, rotated.y+game.Renderer()->getSize().y/2);
 		game.Renderer()->draw(selectionCircle);
 	}
 }

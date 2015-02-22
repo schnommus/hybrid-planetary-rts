@@ -92,8 +92,10 @@ void Game::Run() {
 		terrainRenderSys->process();
 
 		selectionSys->process();
-		selectionSys->drawUnder();
 		commandSys->process();
+
+		selectionSys->drawUnder();
+		
 
 		uvRenderSys->process();
 

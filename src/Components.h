@@ -48,6 +48,13 @@ public:
 	sf::Texture texture;
 };
 
+class MoveSpriteComponent : public artemis::Component {
+public:
+	SpriteComponent *movingSpriteComponent;
+	MoveSpriteComponent( SpriteComponent *sprite );
+	static artemis::Component *CreateFromAttributes( AttributeList &att );
+};
+
 class NameComponent : public artemis::Component  {
 	public:
 		NameComponent( std::string namev ) : name(namev) {}
@@ -78,6 +85,7 @@ public:
 	static artemis::Component *CreateFromAttributes( AttributeList &att );
 	float speed;
 	bool isMoving;
+	bool movingLeft;
 	sf::Vector2f target;
 	sf::Vector2f startingPosition;
 	float lerpDelta;
