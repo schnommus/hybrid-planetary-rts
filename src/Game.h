@@ -2,6 +2,8 @@
 
 #include <Artemis/Artemis.h>
 #include <SFML/Graphics.hpp>
+#define _USE_MATH_DEFINES
+#include <math.h>
 
 class CameraSystem;
 class XMLEntityFactory;

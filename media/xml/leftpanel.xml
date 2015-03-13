@@ -1,5 +1,5 @@
 <entity type_name='leftpanel'>
 	<sprite_component file_name='leftpanel.png'/>
 	<ui_tag/>
-	<flat_position_component x='182' y='208'/>
+	<flat_position_component x='181.5' y='208.5'/>
 </entity>
