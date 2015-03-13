@@ -217,7 +217,6 @@ void UVSphericalRenderSystem::processEntity (artemis::Entity & e) {
 		if(moveComponent.isMoving == true) {
 			spriteComponent = moveSpriteComponent.movingSpriteComponent;
 			
-			std::cout << moveComponent.movingLeft << std::endl;
 			if( moveComponent.movingLeft ) {
 				spriteComponent->sprite.setScale(-1.0f, 1.0f);
 			} else {
