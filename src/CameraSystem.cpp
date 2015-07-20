@@ -33,7 +33,7 @@ void CameraSystem::doProcessing () {
 
 	worldtransform = worldtransform * (m1*m2);
 
-	m2.setupRotate( 2, 0.2*world->getDelta() );
+	m2.setupRotate( 2, 0.05*world->getDelta() );
 	sun = sun * m2;
 }
 
