@@ -269,6 +269,17 @@ void UVSphericalRenderSystem::processEntity (artemis::Entity & e) {
 				}
 
 			} else {
+                // Draw shadows beneath entities
+                sf::Sprite shadow = s;
+                float shadowLength = 500.0f/(1+sqrt(pow(rotated.x + sunrotated.x, 2) + pow(rotated.y + sunrotated.y, 2) + pow(rotated.z + sunrotated.z, 2)));
+                float shadowLengthx = (shadowLength > 0.7f) ? 0.7f : shadowLength;
+                shadow.setScale(shadowLengthx, -shadowLength+0.2);
+                float shadowAlpha = 168 - shadowLength * 100;
+                if (shadowAlpha < 0) shadowAlpha = 0;
+                shadow.setColor(sf::Color(0, 0, 0, shadowAlpha));
+                float direction = atan2f(sunrotated.y - rotated.y, sunrotated.x - rotated.x);
+                shadow.setRotation( -90 - 180 * direction / 3.14 );
+				game.Renderer()->draw( shadow );
 				game.Renderer()->draw( s );
 			}
 
